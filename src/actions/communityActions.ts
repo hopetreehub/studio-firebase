@@ -55,79 +55,8 @@ function mapDocToCommunityPost(doc: FirebaseFirestore.DocumentSnapshot): Communi
   };
 }
 
-// Fallback data for development/testing
-const fallbackCommunityPosts: CommunityPost[] = [
-  {
-    id: 'fallback-1',
-    authorId: 'system',
-    authorName: 'InnerSpell 운영자',
-    title: 'InnerSpell 커뮤니티에 오신 것을 환영합니다!',
-    content: '이곳은 타로와 영성에 대해 자유롭게 이야기를 나누는 공간입니다. 서로 존중하며 즐거운 커뮤니티를 함께 만들어가요.',
-    viewCount: 150,
-    commentCount: 2,
-    category: 'free-discussion',
-    createdAt: new Date('2024-05-20T10:00:00Z'),
-    updatedAt: new Date('2024-05-20T10:00:00Z'),
-  },
-  {
-    id: 'fallback-2',
-    authorId: 'user-123',
-    authorName: '별빛여행자',
-    title: '최근에 뽑았던 3카드 스프레드 공유해요',
-    content: '최근 직장 문제로 3카드 스프레드를 뽑아봤는데, 과거-은둔자, 현재-컵2, 미래-완드에이스가 나왔어요. 혹시 다른 분들은 어떻게 해석하시나요?',
-    viewCount: 78,
-    commentCount: 5,
-    category: 'reading-share',
-    readingQuestion: '저의 현재 직장운은 어떤가요?',
-    cardsInfo: '과거: The Hermit (은둔자), 현재: Two of Cups (컵 2), 미래: Ace of Wands (완드 에이스)',
-    createdAt: new Date('2024-05-21T14:30:00Z'),
-    updatedAt: new Date('2024-05-21T14:30:00Z'),
-  },
-   {
-    id: 'fallback-3',
-    authorId: 'user-456',
-    authorName: '진리탐구자',
-    title: '여황제 카드와 여사제 카드의 차이가 궁금해요!',
-    content: '두 카드 모두 강력한 여성적 에너지를 상징하는 것 같은데, 해석할 때마다 헷갈립니다. 두 카드의 핵심적인 차이점은 무엇일까요? 다른 분들의 의견이 궁금합니다.',
-    viewCount: 42,
-    commentCount: 3,
-    category: 'q-and-a',
-    createdAt: new Date('2024-05-22T11:00:00Z'),
-    updatedAt: new Date('2024-05-22T11:00:00Z'),
-  },
-  {
-    id: 'fallback-4',
-    authorId: 'user-789',
-    authorName: '컬렉터K',
-    title: '라이더-웨이트 덱의 다양한 에디션 비교!',
-    content: '가장 클래식한 라이더-웨이트 덱도 여러 버전이 있는 것 아시나요? 제가 가진 스미스-웨이트 센테니얼 에디션과 알비노-웨이트 덱을 간단히 비교해봤습니다. 색감이나 카드 질감이 미묘하게 달라서 리딩할 때 느낌도 달라요!',
-    viewCount: 35,
-    commentCount: 4,
-    category: 'deck-review',
-    createdAt: new Date('2024-05-23T09:00:00Z'),
-    updatedAt: new Date('2024-05-23T09:00:00Z'),
-  },
-    {
-    id: 'fallback-5',
-    authorId: 'user-study-lead',
-    authorName: '스터디리더',
-    title: '[스터디 모집] 초보자를 위한 라이더-웨이트 타로 스터디',
-    content: '타로에 입문하고 싶지만 어디서부터 시작해야 할지 막막하신 분들을 위해 기초 스터디를 개설합니다. 매주 주말에 온라인으로 만나 함께 배우고 리딩 연습도 할 예정입니다. 관심 있는 분들은 댓글로 문의해주세요!',
-    viewCount: 25,
-    commentCount: 8,
-    category: 'study-group',
-    createdAt: new Date('2024-05-24T18:00:00Z'),
-    updatedAt: new Date('2024-05-24T18:00:00Z'),
-  },
-];
-
 // Get community posts for a specific category
 export async function getCommunityPosts(category: CommunityPostCategory): Promise<CommunityPost[]> {
-  if (process.env.NEXT_PUBLIC_DEV_MODE === 'true') {
-    console.log(`DEV MODE: Bypassing Firestore for getCommunityPosts('${category}'), returning fallback posts.`);
-    return fallbackCommunityPosts.filter(p => p.category === category);
-  }
-
   try {
     const snapshot = await firestore.collection('communityPosts')
       .where('category', '==', category)
@@ -135,30 +64,25 @@ export async function getCommunityPosts(category: CommunityPostCategory): Promis
       .get();
       
     if (snapshot.empty) {
-      return fallbackCommunityPosts.filter(p => p.category === category);
+      return [];
     }
     return snapshot.docs.map(mapDocToCommunityPost);
   } catch (error) {
-    console.error(`Error fetching ${category} posts from Firestore, returning fallback posts:`, error);
-    return fallbackCommunityPosts.filter(p => p.category === category);
+    console.error(`Error fetching ${category} posts from Firestore:`, error);
+    // In case of an error, return an empty array to prevent the page from crashing.
+    return [];
   }
 }
 
 // Get a single community post by ID
 export async function getCommunityPostById(postId: string): Promise<CommunityPost | null> {
-  if (process.env.NEXT_PUBLIC_DEV_MODE === 'true') {
-    console.log(`DEV MODE: Bypassing Firestore for getCommunityPostById('${postId}'), returning fallback post.`);
-    const fallbackPost = fallbackCommunityPosts.find(p => p.id === postId);
-    return fallbackPost || null;
-  }
-
   try {
     const docRef = firestore.collection('communityPosts').doc(postId);
     const doc = await docRef.get();
     
     if (!doc.exists) {
-      const fallbackPost = fallbackCommunityPosts.find(p => p.id === postId);
-      return fallbackPost || null;
+      console.log(`Post with ID ${postId} not found in Firestore.`);
+      return null;
     }
     
     // Increment view count without affecting the data returned to this request.
@@ -171,8 +95,7 @@ export async function getCommunityPostById(postId: string): Promise<CommunityPos
 
   } catch (error) {
     console.error(`Error fetching post ${postId}:`, error);
-    const fallbackPost = fallbackCommunityPosts.find(p => p.id === postId);
-    return fallbackPost || null;
+    return null;
   }
 }
 
