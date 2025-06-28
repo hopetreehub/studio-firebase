@@ -169,6 +169,16 @@ export const ApiCommunityCombinedPayloadSchema = z.discriminatedUnion("category"
 ]);
 export type ApiCommunityCombinedPayload = z.infer<typeof ApiCommunityCombinedPayloadSchema>;
 
+// Blog Post (for deprecated API endpoint)
+export const BlogFormDataSchema = z.object({
+  title: z.string().min(1, "제목은 필수입니다."),
+  content: z.string().min(1, "내용은 필수입니다."),
+  authorName: z.string().optional(),
+  authorPhotoURL: z.string().url().optional(),
+});
+export type BlogFormData = z.infer<typeof BlogFormDataSchema>;
+
+
 // User Profile Update
 export const UserProfileFormSchema = z.object({
   displayName: z.string().min(2, { message: '닉네임은 최소 2자 이상이어야 합니다.' }).max(50, { message: '닉네임은 최대 50자까지 가능합니다.' }),
