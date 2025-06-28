@@ -69,7 +69,8 @@ export async function getCommunityPosts(category: CommunityPostCategory): Promis
     return snapshot.docs.map(mapDocToCommunityPost);
   } catch (error) {
     console.error(`Error fetching ${category} posts from Firestore:`, error);
-    throw new Error(`커뮤니티 게시글(${category})을 불러오는 중 오류가 발생했습니다.`);
+    // Instead of throwing, return an empty array to prevent page crash on transient errors.
+    return [];
   }
 }
 
@@ -94,7 +95,8 @@ export async function getCommunityPostById(postId: string): Promise<CommunityPos
 
   } catch (error) {
     console.error(`Error fetching post ${postId}:`, error);
-    throw new Error(`게시글(ID: ${postId})을 불러오는 중 오류가 발생했습니다.`);
+    // Instead of throwing, return null to allow the page to render a 'not found' state.
+    return null;
   }
 }
 
