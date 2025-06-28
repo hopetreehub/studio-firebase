@@ -46,6 +46,7 @@ export const metadata: Metadata = {
     // site: '@yourTwitterHandle', 
     // creator: '@creatorTwitterHandle', 
   },
+  icons: null, // Explicitly disable auto icon generation to prevent 404 errors
 };
 
 export const viewport: Viewport = {
