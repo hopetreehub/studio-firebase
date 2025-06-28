@@ -16,7 +16,6 @@ export const metadata: Metadata = {
   },
   description: 'AI 기반 타로 해석과 함께 현대적인 영적 타로 서비스를 경험하세요. 타로 카드 리딩, 카드 백과사전, 영적 성장 블로그를 제공합니다.',
   keywords: ['타로', 'AI 타로', '타로카드', '운세', '점성술', '영적 성장', '명상', 'InnerSpell', '인공지능 타로', '타로 리딩', '타로 해석'],
-  manifest: '/manifest.json',
   openGraph: {
     type: 'website',
     locale: 'ko_KR',

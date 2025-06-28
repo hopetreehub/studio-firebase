@@ -1,7 +1,10 @@
 
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
 import { NewsletterForm } from '@/components/home/NewsletterSignup';
+import { useState, useEffect } from 'react';
 
 const navItems = [
   { href: '/', label: 'Home' },
@@ -17,7 +20,12 @@ const policyItems = [
 ];
 
 export function Footer() {
-  const currentYear = new Date().getFullYear();
+  const [year, setYear] = useState(new Date().getFullYear());
+
+  useEffect(() => {
+    setYear(new Date().getFullYear());
+  }, []);
+
   return (
     <footer className="border-t border-border/40 bg-background/95 py-8 text-sm">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -64,7 +72,7 @@ export function Footer() {
           </div>
         </div>
         <div className="border-t border-border/20 pt-6 text-center">
-            <p className="text-xs text-muted-foreground/80">© {currentYear} InnerSpell. All rights reserved.</p>
+            <p className="text-xs text-muted-foreground/80">© {year} InnerSpell. All rights reserved.</p>
             <p className="text-xs text-muted-foreground/80 mt-1">
               문의: <a href="mailto:admin@innerspell.com" className="hover:text-primary">admin@innerspell.com</a>
             </p>
