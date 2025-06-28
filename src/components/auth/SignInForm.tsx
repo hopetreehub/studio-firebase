@@ -95,7 +95,9 @@ export function SignInForm() {
     } catch (error: any) {
       console.error("Google Sign-In Error:", error); // 상세 로깅 추가
       let errorMessage = 'Google 로그인 중 오류가 발생했습니다.';
-       if (error.code === 'auth/account-exists-with-different-credential') {
+       if (error.code === 'auth/unauthorized-domain') {
+        errorMessage = '이 앱의 도메인이 Google 로그인에 대해 승인되지 않았습니다. Firebase 콘솔의 Authentication > Settings > Authorized domains에 현재 도메인을 추가해주세요.';
+      } else if (error.code === 'auth/account-exists-with-different-credential') {
         errorMessage = '이미 다른 방식으로 가입된 이메일입니다. 다른 로그인 방식을 시도해주세요.';
       } else if (error.code === 'auth/popup-closed-by-user') {
         errorMessage = 'Google 로그인 팝업이 닫혔습니다. 다시 시도해주세요.';

@@ -31,7 +31,8 @@ export function UserNav() {
     }
     try {
       await signOut(auth);
-      router.push('/'); // Redirect to home page after sign out
+      // Full page reload to ensure all states are cleared properly.
+      window.location.href = '/';
     } catch (error) {
       console.error('Error signing out:', error);
     }

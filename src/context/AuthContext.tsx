@@ -17,17 +17,6 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const devAdminUser: AppUser = {
-  uid: 'dev-admin-uid',
-  email: 'admin@innerspell.com',
-  displayName: '개발자 관리자',
-  photoURL: `https://i.pravatar.cc/150?u=dev-admin`,
-  role: 'admin',
-  subscriptionStatus: 'paid', // Dev admin is a paid user to hide ads
-  creationTime: new Date().toISOString(),
-  lastSignInTime: new Date().toISOString(),
-};
-
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<AppUser | null>(null);
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
@@ -39,16 +28,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
-    // --- Development Mode: Auto-login as Admin ---
-    if (process.env.NEXT_PUBLIC_DEV_MODE === 'true') {
-      console.warn("DEV MODE: Logged in as mock admin user. To disable, remove NEXT_PUBLIC_DEV_MODE from .env file.");
-      setUser(devAdminUser);
-      setFirebaseUser(null); // No real Firebase user in this mode
-      setLoading(false);
-      return;
-    }
-    // --- End Development Mode ---
-
     if (auth) {
       const unsubscribe = onAuthStateChanged(auth, async (currentFirebaseUser) => {
         setLoading(true);
