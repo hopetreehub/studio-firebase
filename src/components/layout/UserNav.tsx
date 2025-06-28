@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -34,11 +35,9 @@ export function UserNav() {
     try {
       await signOut(auth);
       toast({ title: '로그아웃 성공', description: '성공적으로 로그아웃되었습니다.' });
-      // Redirecting with a full page reload is the most reliable way to clear all state.
-      // A small delay allows the user to see the toast message.
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 500); 
+      // Use Next.js router to navigate and refresh the page state reliably.
+      router.push('/');
+      router.refresh();
     } catch (error) {
       console.error('Error signing out:', error);
       toast({ variant: 'destructive', title: '로그아웃 오류', description: '로그아웃 중 문제가 발생했습니다.' });

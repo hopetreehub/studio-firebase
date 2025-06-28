@@ -67,6 +67,8 @@ export default function ProfilePage() {
   const [selectedReadingDetail, setSelectedReadingDetail] = useState<SavedReading | null>(null);
   const [readingToDelete, setReadingToDelete] = useState<SavedReading | null>(null);
   const [isDeletingReading, setIsDeletingReading] = useState(false);
+  
+  const [creationDate, setCreationDate] = useState('정보 없음');
 
   useEffect(() => {
     if (!authLoading && !firebaseUser) {
@@ -97,8 +99,14 @@ export default function ProfilePage() {
       setSajuInfo(user.sajuInfo || '');
       fetchReadings(user.uid);
     }
+
+    if (firebaseUser?.metadata.creationTime) {
+        setCreationDate(new Date(firebaseUser.metadata.creationTime).toLocaleDateString('ko-KR'));
+    } else {
+        setCreationDate('정보 없음');
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+  }, [user, firebaseUser]);
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -265,7 +273,7 @@ export default function ProfilePage() {
                 </div>
                 <div>
                    <Label className="text-sm font-medium text-muted-foreground">계정 생성일</Label>
-                   <p className="text-foreground h-10 flex items-center">{firebaseUser?.metadata.creationTime ? new Date(firebaseUser.metadata.creationTime).toLocaleDateString('ko-KR') : '정보 없음'}</p>
+                   <p className="text-foreground h-10 flex items-center">{creationDate}</p>
                 </div>
             </div>
 
