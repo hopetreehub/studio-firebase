@@ -95,7 +95,7 @@ export async function getUserReadings(userId: string): Promise<SavedReading[]> {
     });
   } catch (error) {
     console.error(`Error fetching readings for user ${userId}:`, error);
-    return []; // Return empty array on error to prevent crashing UI
+    throw new Error('리딩 기록을 불러오는 중 오류가 발생했습니다.');
   }
 }
 

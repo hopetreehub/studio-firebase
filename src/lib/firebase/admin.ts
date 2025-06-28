@@ -9,6 +9,8 @@ if (!admin.apps.length) {
   // The hosting environment should provide the necessary credentials automatically.
   admin.initializeApp({
     credential: admin.credential.applicationDefault(),
+    // Explicitly setting the projectId can sometimes resolve authentication issues in certain environments.
+    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
   });
 }
 

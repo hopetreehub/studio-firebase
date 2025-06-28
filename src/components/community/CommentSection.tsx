@@ -73,11 +73,21 @@ export function CommentSection({ postId, initialCommentCount }: CommentSectionPr
   useEffect(() => {
     const fetchComments = async () => {
       setLoadingComments(true);
-      const fetchedComments = await getCommentsForPost(postId);
-      setComments(fetchedComments);
-      setLoadingComments(false);
+      try {
+        const fetchedComments = await getCommentsForPost(postId);
+        setComments(fetchedComments);
+      } catch (error: any) {
+        toast({
+          variant: 'destructive',
+          title: '오류',
+          description: error.message || '댓글을 불러오는 데 실패했습니다.',
+        });
+      } finally {
+        setLoadingComments(false);
+      }
     };
     fetchComments();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [postId]);
 
   const onAddComment: SubmitHandler<CommunityCommentFormData> = async (data) => {

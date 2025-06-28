@@ -77,9 +77,18 @@ export default function ProfilePage() {
   useEffect(() => {
     const fetchReadings = async (userId: string) => {
       setLoadingReadings(true);
-      const readings = await getUserReadings(userId);
-      setSavedReadings(readings);
-      setLoadingReadings(false);
+      try {
+        const readings = await getUserReadings(userId);
+        setSavedReadings(readings);
+      } catch (error: any) {
+        toast({
+          variant: 'destructive',
+          title: '오류',
+          description: error.message || '리딩 기록을 불러오는 데 실패했습니다.',
+        });
+      } finally {
+        setLoadingReadings(false);
+      }
     };
 
     if (user) {
@@ -88,6 +97,7 @@ export default function ProfilePage() {
       setSajuInfo(user.sajuInfo || '');
       fetchReadings(user.uid);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const handleUpdateProfile = async (e: React.FormEvent) => {

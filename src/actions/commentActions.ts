@@ -42,7 +42,7 @@ export async function getCommentsForPost(postId: string): Promise<CommunityComme
     return snapshot.docs.map(mapDocToCommunityComment);
   } catch (error) {
     console.error(`Error fetching comments for post ${postId}:`, error);
-    return [];
+    throw new Error('댓글을 불러오는 중 오류가 발생했습니다.');
   }
 }
 
