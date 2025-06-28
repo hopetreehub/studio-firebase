@@ -1,4 +1,3 @@
-
 'use client';
 
 import type React from 'react';
@@ -20,7 +19,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<AppUser | null>(null);
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // Represents initial auth check
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const refreshUser = () => {
@@ -30,7 +29,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     if (auth) {
       const unsubscribe = onAuthStateChanged(auth, async (currentFirebaseUser) => {
-        setLoading(true);
         if (currentFirebaseUser) {
           setFirebaseUser(currentFirebaseUser);
           const profile = await getUserProfile(currentFirebaseUser.uid);
@@ -52,6 +50,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setUser(null);
           setFirebaseUser(null);
         }
+        // Only set loading to false, never back to true.
+        // This ensures the full-page loader only shows once.
         setLoading(false);
       });
       return () => unsubscribe();

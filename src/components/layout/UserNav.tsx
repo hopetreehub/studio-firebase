@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -19,22 +18,30 @@ import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import { LogOut, UserCircle, Settings, LogIn, UserPlus } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useToast } from '@/hooks/use-toast';
 
 export function UserNav() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const { toast } = useToast();
 
   const handleSignOut = async () => {
     if (!auth) {
       console.error("Firebase auth is not initialized, cannot sign out.");
+      toast({ variant: 'destructive', title: '오류', description: '로그아웃 기능이 초기화되지 않았습니다.' });
       return;
     }
     try {
       await signOut(auth);
-      // Full page reload to ensure all states are cleared properly.
-      window.location.href = '/';
+      toast({ title: '로그아웃 성공', description: '성공적으로 로그아웃되었습니다.' });
+      // Redirecting with a full page reload is the most reliable way to clear all state.
+      // A small delay allows the user to see the toast message.
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 500); 
     } catch (error) {
       console.error('Error signing out:', error);
+      toast({ variant: 'destructive', title: '로그아웃 오류', description: '로그아웃 중 문제가 발생했습니다.' });
     }
   };
 
