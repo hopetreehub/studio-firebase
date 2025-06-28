@@ -20,7 +20,7 @@ const policyItems = [
 ];
 
 export function Footer() {
-  const [year, setYear] = useState(new Date().getFullYear());
+  const [year, setYear] = useState<number | null>(null);
 
   useEffect(() => {
     setYear(new Date().getFullYear());
@@ -72,7 +72,7 @@ export function Footer() {
           </div>
         </div>
         <div className="border-t border-border/20 pt-6 text-center">
-            <p className="text-xs text-muted-foreground/80">© {year} InnerSpell. All rights reserved.</p>
+            {year && <p className="text-xs text-muted-foreground/80">© {year} InnerSpell. All rights reserved.</p>}
             <p className="text-xs text-muted-foreground/80 mt-1">
               문의: <a href="mailto:admin@innerspell.com" className="hover:text-primary">admin@innerspell.com</a>
             </p>

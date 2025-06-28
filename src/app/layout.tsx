@@ -46,10 +46,6 @@ export const metadata: Metadata = {
     // site: '@yourTwitterHandle', 
     // creator: '@creatorTwitterHandle', 
   },
-  icons: { // Added icons for favicon and apple-touch-icon
-    icon: '/favicon.ico',
-    apple: '/apple-touch-icon.png',
-  },
 };
 
 export const viewport: Viewport = {
