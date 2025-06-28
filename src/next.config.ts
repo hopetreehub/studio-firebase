@@ -17,13 +17,31 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'blog.innerspell.com',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'i.pravatar.cc',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
+        port: '',
+        pathname: '/**',
+      }
     ],
   },
   webpack: (config, { isServer }) => {
     if (!isServer) {
       // Don't resolve these modules on the client
       config.resolve.fallback = {
-        ...config.resolve.fallback,
+        ...(config.resolve.fallback || {}), // Ensure fallback object exists
         child_process: false,
         fs: false,
         os: false,
