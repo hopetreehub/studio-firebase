@@ -36,6 +36,7 @@ export function SignInForm() {
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [googleError, setGoogleError] = useState<string | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -47,7 +48,8 @@ export function SignInForm() {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setLoading(true);
-    form.clearErrors(); // Clear previous errors
+    form.clearErrors();
+    setGoogleError(null);
     if (!auth) {
         toast({ variant: 'destructive', title: '설정 오류', description: 'Firebase 인증이 설정되지 않았습니다. 관리자에게 문의하세요.' });
         setLoading(false);
@@ -83,6 +85,7 @@ export function SignInForm() {
 
   const handleGoogleSignIn = async () => {
     setLoading(true);
+    setGoogleError(null);
     if (!auth) {
         toast({ variant: 'destructive', title: '설정 오류', description: 'Firebase 인증이 설정되지 않았습니다. 관리자에게 문의하세요.' });
         setLoading(false);
@@ -97,7 +100,7 @@ export function SignInForm() {
         router.push(redirectUrl);
       }
     } catch (error: any) {
-      console.error("Google Sign-In Error:", error); // 상세 로깅 추가
+      console.error("Google Sign-In Error:", error);
       let errorMessage = 'Google 로그인 중 오류가 발생했습니다.';
        if (error.code === 'auth/unauthorized-domain') {
         errorMessage = '이 앱의 도메인이 Google 로그인에 대해 승인되지 않았습니다. Firebase 콘솔의 Authentication > Settings > Authorized domains에 현재 도메인을 추가해주세요.';
@@ -116,6 +119,7 @@ export function SignInForm() {
       } else if (error.message) {
         errorMessage = error.message;
       }
+      setGoogleError(errorMessage);
       toast({ variant: 'destructive', title: 'Google 로그인 오류', description: errorMessage });
     } finally {
       setLoading(false);
@@ -201,6 +205,12 @@ export function SignInForm() {
         <svg className="mr-2 h-4 w-4" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512"><path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"></path></svg>
         Google 계정으로 로그인
       </Button>
+      {googleError && (
+        <div className="mt-4 flex items-center text-sm font-medium text-destructive bg-destructive/10 p-3 rounded-md">
+            <AlertCircle className="h-4 w-4 mr-2" />
+            {googleError}
+        </div>
+      )}
       <p className="mt-6 text-center text-sm text-muted-foreground">
         계정이 없으신가요?{' '}
         <Link href="/sign-up" className="font-medium text-primary hover:underline">
