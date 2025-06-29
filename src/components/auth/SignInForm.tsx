@@ -20,7 +20,7 @@ import { auth } from '@/lib/firebase/client';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useState } from 'react';
-import { Eye, EyeOff, Mail, KeyRound, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Mail, KeyRound, Loader2, AlertCircle } from 'lucide-react';
 
 const formSchema = z.object({
   email: z.string().email({ message: '유효한 이메일 주소를 입력해주세요.' }),
@@ -47,6 +47,7 @@ export function SignInForm() {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setLoading(true);
+    form.clearErrors(); // Clear previous errors
     if (!auth) {
         toast({ variant: 'destructive', title: '설정 오류', description: 'Firebase 인증이 설정되지 않았습니다. 관리자에게 문의하세요.' });
         setLoading(false);
@@ -61,17 +62,20 @@ export function SignInForm() {
       }
     } catch (error: any) {
       console.error("Sign-In Error:", error);
-      let errorMessage = '로그인 중 오류가 발생했습니다. 이메일 또는 비밀번호를 확인해주세요.';
-      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
-        errorMessage = '이메일 또는 비밀번호가 올바르지 않습니다.';
+      let errorMessage = '로그인 중 알 수 없는 오류가 발생했습니다.';
+      
+      if (error.code === 'auth/invalid-credential') {
+        errorMessage = '입력하신 이메일 또는 비밀번호가 올바르지 않습니다.';
+        form.setError("root.serverError", { type: "manual", message: errorMessage });
       } else if (error.code === 'auth/too-many-requests') {
         errorMessage = '너무 많은 로그인 시도를 하셨습니다. 잠시 후 다시 시도해주세요.';
+        form.setError("root.serverError", { type: "manual", message: errorMessage });
       } else if (error.code === 'auth/operation-not-allowed') {
         errorMessage = '이메일/비밀번호 방식의 로그인이 비활성화되어 있습니다. 관리자에게 문의하세요.';
-      } else if (error.message) {
-        errorMessage = error.message;
+        form.setError("root.serverError", { type: "manual", message: errorMessage });
+      } else {
+        form.setError("root.serverError", { type: "manual", message: errorMessage });
       }
-      toast({ variant: 'destructive', title: '로그인 오류', description: errorMessage });
     } finally {
       setLoading(false);
     }
@@ -122,7 +126,7 @@ export function SignInForm() {
     <>
       <h2 className="font-headline text-3xl font-semibold text-center text-primary mb-6">다시 오신 것을 환영합니다</h2>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <FormField
             control={form.control}
             name="email"
@@ -170,7 +174,13 @@ export function SignInForm() {
               </FormItem>
             )}
           />
-          <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" disabled={loading}>
+          {form.formState.errors.root?.serverError && (
+            <div className="flex items-center text-sm font-medium text-destructive bg-destructive/10 p-3 rounded-md">
+              <AlertCircle className="h-4 w-4 mr-2" />
+              {form.formState.errors.root.serverError.message}
+            </div>
+          )}
+          <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground !mt-6" disabled={loading}>
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {loading ? '로그인 중...' : '로그인'}
           </Button>
