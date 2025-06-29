@@ -76,7 +76,13 @@ export function SignInForm() {
         setShowPasswordlessForm(false); // Go back to main login form
     } catch (error: any) {
         console.error("Passwordless Sign-In Error:", error);
-        toast({ variant: 'destructive', title: '오류', description: '메일 발송 중 오류가 발생했습니다. 이메일 주소를 확인해주세요.' });
+        let errorMessage = '메일 발송 중 오류가 발생했습니다. 이메일 주소를 확인해주세요.';
+        if (error.code === 'auth/invalid-email') {
+          errorMessage = '유효하지 않은 이메일 주소 형식입니다.';
+        } else if (error.code === 'auth/operation-not-allowed') {
+          errorMessage = '이메일 링크 로그인이 Firebase 프로젝트에서 활성화되지 않았습니다. 관리자 설정에서 활성화해주세요.';
+        }
+        toast({ variant: 'destructive', title: '오류', description: errorMessage });
     } finally {
         setLoading(false);
     }
@@ -157,7 +163,6 @@ export function SignInForm() {
         errorMessage = error.message;
       }
       setGoogleError(errorMessage);
-      toast({ variant: 'destructive', title: 'Google 로그인 오류', description: errorMessage });
     } finally {
       setLoading(false);
     }

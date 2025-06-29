@@ -37,8 +37,18 @@ export default function FinishSignInPage() {
             toast({ title: '로그인 성공', description: '환영합니다!' });
             router.push('/');
         } catch (err: any) {
-            console.error(err);
-            setError('로그인에 실패했습니다. 링크가 만료되었거나 이미 사용되었을 수 있습니다.');
+            console.error("Finish Sign-In Error:", err);
+            let errorMessage = '로그인에 실패했습니다. 링크가 만료되었거나 이미 사용되었을 수 있습니다.';
+            if (err.code === 'auth/invalid-action-code') {
+                errorMessage = '유효하지 않은 링크입니다. 만료되었거나 이미 사용되었을 수 있습니다. 다시 시도해주세요.';
+            } else if (err.code === 'auth/invalid-email') {
+                errorMessage = '이메일 주소가 올바르지 않습니다. 다시 시도해주세요.';
+            } else if (err.code === 'auth/user-disabled') {
+                errorMessage = '이 계정은 비활성화되었습니다. 관리자에게 문의하세요.';
+            } else if (err.code === 'auth/user-not-found') {
+                errorMessage = '입력하신 이메일 주소에 해당하는 사용자를 찾을 수 없습니다.';
+            }
+            setError(errorMessage);
             setLoading(false);
         }
     };
