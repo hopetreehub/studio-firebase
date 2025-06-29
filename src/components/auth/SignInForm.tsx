@@ -15,16 +15,20 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, sendSignInLinkToEmail } from 'firebase/auth';
 import { auth } from '@/lib/firebase/client';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useState } from 'react';
-import { Eye, EyeOff, Mail, KeyRound, Loader2, AlertCircle } from 'lucide-react';
+import { Eye, EyeOff, Mail, KeyRound, Loader2, AlertCircle, ArrowLeft } from 'lucide-react';
 
 const formSchema = z.object({
   email: z.string().email({ message: '유효한 이메일 주소를 입력해주세요.' }),
   password: z.string().min(1, { message: '비밀번호를 입력해주세요.' }),
+});
+
+const passwordlessSchema = z.object({
+  email: z.string().email({ message: '유효한 이메일 주소를 입력해주세요.' }),
 });
 
 const DISABLE_REDIRECT =
@@ -37,14 +41,47 @@ export function SignInForm() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [googleError, setGoogleError] = useState<string | null>(null);
+  const [showPasswordlessForm, setShowPasswordlessForm] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      email: '',
-      password: '',
-    },
+    defaultValues: { email: '', password: '' },
   });
+
+  const passwordlessForm = useForm<z.infer<typeof passwordlessSchema>>({
+    resolver: zodResolver(passwordlessSchema),
+    defaultValues: { email: '' },
+  });
+
+
+  const onPasswordlessSubmit = async (values: z.infer<typeof passwordlessSchema>) => {
+    setLoading(true);
+    if (!auth) {
+        toast({ variant: 'destructive', title: '설정 오류', description: 'Firebase 인증이 설정되지 않았습니다.' });
+        setLoading(false);
+        return;
+    }
+    try {
+        const actionCodeSettings = {
+            url: `${window.location.origin}/finish-sign-in`,
+            handleCodeInApp: true,
+        };
+        await sendSignInLinkToEmail(auth, values.email, actionCodeSettings);
+        window.localStorage.setItem('emailForSignIn', values.email);
+        toast({
+            title: '인증 메일 발송',
+            description: `${values.email}으로 로그인 링크를 보냈습니다. 받은편지함을 확인해주세요.`,
+            duration: 8000,
+        });
+        setShowPasswordlessForm(false); // Go back to main login form
+    } catch (error: any) {
+        console.error("Passwordless Sign-In Error:", error);
+        toast({ variant: 'destructive', title: '오류', description: '메일 발송 중 오류가 발생했습니다. 이메일 주소를 확인해주세요.' });
+    } finally {
+        setLoading(false);
+    }
+  };
+
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setLoading(true);
@@ -126,6 +163,48 @@ export function SignInForm() {
     }
   };
 
+
+  if (showPasswordlessForm) {
+    return (
+        <>
+            <div className="flex items-center mb-6">
+                <Button variant="ghost" size="icon" className="mr-2" onClick={() => setShowPasswordlessForm(false)}>
+                    <ArrowLeft className="h-5 w-5"/>
+                </Button>
+                <h2 className="font-headline text-3xl font-semibold text-primary">비밀번호 없이 로그인</h2>
+            </div>
+             <p className="text-sm text-muted-foreground mb-6">
+                이메일 주소를 입력하시면, 로그인할 수 있는 일회용 링크를 보내드립니다.
+            </p>
+            <Form {...passwordlessForm}>
+                <form onSubmit={passwordlessForm.handleSubmit(onPasswordlessSubmit)} className="space-y-4">
+                     <FormField
+                        control={passwordlessForm.control}
+                        name="email"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel className="text-foreground/80">이메일</FormLabel>
+                            <div className="relative">
+                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+                            <FormControl>
+                                <Input className="pl-10" placeholder="your@email.com" {...field} />
+                            </FormControl>
+                            </div>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                     <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground !mt-6" disabled={loading}>
+                        {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                        {loading ? '전송 중...' : '로그인 링크 보내기'}
+                    </Button>
+                </form>
+            </Form>
+        </>
+    )
+  }
+
+
   return (
     <>
       <h2 className="font-headline text-3xl font-semibold text-center text-primary mb-6">다시 오신 것을 환영합니다</h2>
@@ -184,7 +263,12 @@ export function SignInForm() {
               {form.formState.errors.root.serverError.message}
             </div>
           )}
-          <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground !mt-6" disabled={loading}>
+           <div className="text-right">
+              <Button type="button" variant="link" className="text-xs h-auto p-0 text-primary" onClick={() => setShowPasswordlessForm(true)}>
+                비밀번호 없이 이메일로 로그인
+              </Button>
+            </div>
+          <Button type="submit" className="w-full bg-primary hover:bg-primary/90 text-primary-foreground" disabled={loading}>
             {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {loading ? '로그인 중...' : '로그인'}
           </Button>
