@@ -6,28 +6,14 @@ import { firestore } from '@/lib/firebase/admin';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import type { SavedReading, SavedReadingCard } from '@/types';
 import { getCardById } from '@/lib/tarot-data';
+import { SaveReadingInputSchema, type SaveReadingInput } from '@/types';
 
-const SaveReadingInputSchema = z.object({
-  userId: z.string().min(1, { message: '사용자 ID가 필요합니다.' }),
-  question: z.string().min(1, { message: '질문 내용이 필요합니다.' }),
-  spreadName: z.string().min(1, { message: '스프레드 이름이 필요합니다.' }),
-  spreadNumCards: z.number().int().positive({ message: '스프레드 카드 수는 양의 정수여야 합니다.' }),
-  drawnCards: z.array(
-    z.object({
-      id: z.string(),
-      isReversed: z.boolean(),
-      position: z.string().optional(),
-    })
-  ).min(1, { message: '최소 한 장의 카드가 필요합니다.' }),
-  interpretationText: z.string().min(1, { message: '해석 내용이 필요합니다.' }),
-});
-
-export type SaveReadingInput = z.infer<typeof SaveReadingInputSchema>;
 
 export async function saveUserReading(
   input: SaveReadingInput
 ): Promise<{ success: boolean; readingId?: string; error?: string | object }> {
   try {
+    // Validate the input using the centralized schema from types/index.ts
     const validationResult = SaveReadingInputSchema.safeParse(input);
     if (!validationResult.success) {
       return { success: false, error: validationResult.error.flatten().fieldErrors };
@@ -40,7 +26,7 @@ export async function saveUserReading(
       question,
       spreadName,
       spreadNumCards,
-      drawnCards, // Now saves the simplified card info
+      drawnCards, // Saves the simplified, validated card info
       interpretationText,
       createdAt: FieldValue.serverTimestamp(),
     };

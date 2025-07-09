@@ -416,8 +416,8 @@ export function TarotReadingClient() {
       toast({ variant: 'destructive', title: '로그인 필요', description: '리딩을 저장하려면 먼저 로그인해주세요.' });
       return;
     }
-    if (!interpretation || selectedCardsForReading.length === 0) {
-      toast({ variant: 'destructive', title: '저장 오류', description: '저장할 해석 내용이나 선택된 카드가 없습니다.' });
+    if (!interpretation || selectedCardsForReading.length === 0 || !question.trim()) {
+      toast({ variant: 'destructive', title: '저장 오류', description: '저장할 해석 내용, 선택된 카드, 또는 질문이 없습니다.' });
       return;
     }
 

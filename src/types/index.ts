@@ -90,14 +90,37 @@ export const tarotSpreads: SpreadConfiguration[] = [
   { id: 'celtic-cross-wisdom', name: '켈틱 크로스 지혜 (Celtic Cross Wisdom)', description: '가장 전통적이고 심층적인 열 장의 카드 스프레드입니다.', numCards: 10, positions: ['현재 상황', '도전 과제', '과거 기반', '가까운 미래', '목표/의식', '무의식적 영향', '조언', '외부 영향', '희망과 두려움', '최종 결과'] },
 ];
 
+// --- Reading Save/Load Types ---
+
+// Schema for the simplified card data stored in Firestore.
+export const SavedReadingCardSchema = z.object({
+  id: z.string(),
+  isReversed: z.boolean(),
+  position: z.string(), // Made required for data consistency
+});
+export type SavedReadingCardFirestore = z.infer<typeof SavedReadingCardSchema>;
+
+// Schema for the data sent to the saveUserReading action.
+export const SaveReadingInputSchema = z.object({
+  userId: z.string().min(1, { message: '사용자 ID가 필요합니다.' }),
+  question: z.string().min(1, { message: '질문 내용이 필요합니다.' }),
+  spreadName: z.string().min(1, { message: '스프레드 이름이 필요합니다.' }),
+  spreadNumCards: z.number().int().positive({ message: '스프레드 카드 수는 양의 정수여야 합니다.' }),
+  drawnCards: z.array(SavedReadingCardSchema).min(1, { message: '최소 한 장의 카드가 필요합니다.' }),
+  interpretationText: z.string().min(1, { message: '해석 내용이 필요합니다.' }),
+});
+export type SaveReadingInput = z.infer<typeof SaveReadingInputSchema>;
+
+// Type for the rich card data used on the client (e.g., in profile page).
 export type SavedReadingCard = {
   id: string; // TarotCard id
   name: string;
   imageSrc: string;
   isReversed: boolean;
-  position?: string; // Position in the spread, e.g., "Past", "Present"
+  position?: string; // Position in the spread
 };
 
+// Type for a full reading record retrieved from the server.
 export type SavedReading = {
   id: string; // Firestore document ID
   userId: string;
@@ -106,10 +129,11 @@ export type SavedReading = {
   spreadNumCards: number;
   drawnCards: SavedReadingCard[];
   interpretationText: string;
-  createdAt: Date; // Firestore Timestamp will be converted to Date
+  createdAt: Date;
 };
 
-// Community Types
+
+// --- Community Types ---
 export type CommunityPostCategory = 'free-discussion' | 'reading-share' | 'q-and-a' | 'deck-review' | 'study-group';
 
 export type CommunityPost = {
