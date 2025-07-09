@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Menu } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const baseNavItems = [
   { href: '/', label: '홈' },
@@ -20,17 +21,15 @@ const baseNavItems = [
 
 export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Defer adding the admin link until after client-side hydration
-  const navItems = (mounted && user?.role === 'admin') 
-    ? [...baseNavItems, { href: '/admin', label: '관리자' }] 
-    : baseNavItems;
+  const showAdminLink = mounted && !loading && user?.role === 'admin';
+  const isLoading = !mounted || loading;
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -45,7 +44,7 @@ export function Navbar() {
         <div className="flex items-center space-x-2">
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-6 text-sm font-medium">
-            {navItems.map((item) => {
+            {baseNavItems.map((item) => {
               const isExternal = item.href.startsWith('http');
               return (
                 <Link
@@ -59,6 +58,16 @@ export function Navbar() {
                 </Link>
               );
             })}
+            {isLoading ? (
+              <Skeleton className="h-5 w-12 rounded-md" />
+            ) : showAdminLink ? (
+              <Link
+                href="/admin"
+                className="transition-colors hover:text-primary text-foreground/80 font-semibold text-accent"
+              >
+                관리자
+              </Link>
+            ) : null}
           </nav>
 
           <div className="hidden md:block border-l border-border/40 h-6 mx-4"></div>
@@ -83,7 +92,7 @@ export function Navbar() {
                   </SheetTitle>
                 </SheetHeader>
                 <nav className="flex flex-col p-4 space-y-2">
-                  {navItems.map((item) => {
+                  {baseNavItems.map((item) => {
                      const isExternal = item.href.startsWith('http');
                      return (
                         <Link
@@ -98,6 +107,19 @@ export function Navbar() {
                         </Link>
                      );
                   })}
+                  {isLoading ? (
+                    <div className="rounded-md px-3 py-2">
+                       <Skeleton className="h-5 w-16" />
+                    </div>
+                  ) : showAdminLink ? (
+                     <Link
+                        href="/admin"
+                        className="block rounded-md px-3 py-2 text-base font-semibold text-accent hover:bg-accent hover:text-accent-foreground transition-colors"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        관리자
+                      </Link>
+                  ) : null}
                 </nav>
               </SheetContent>
             </Sheet>
