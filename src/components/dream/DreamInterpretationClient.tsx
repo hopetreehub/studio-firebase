@@ -66,12 +66,12 @@ export function DreamInterpretationClient() {
       const result = await generateDreamClarificationQuestions({ dreamDescription: initialDescription });
       setClarificationQuestions(result.questions);
       setStep('clarifying');
-    } catch (error) {
+    } catch (error: any) {
       console.error('질문 생성 오류:', error);
       toast({
         variant: 'destructive',
         title: '질문 생성 오류',
-        description: 'AI가 추가 질문을 생성하는데 실패했습니다. 잠시 후 다시 시도하거나, 바로 해석을 진행할 수 있습니다.',
+        description: error.message || 'AI가 추가 질문을 생성하는데 실패했습니다. 잠시 후 다시 시도하거나, 바로 해석을 진행할 수 있습니다.',
       });
       // Allow user to proceed without clarification if question generation fails
       setStep('initial'); // Go back to initial step to show the "Interpret directly" button
