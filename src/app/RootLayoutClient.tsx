@@ -17,10 +17,9 @@ export default function RootLayoutClient({ children }: { children: React.ReactNo
     setIsMounted(true);
   }, []);
 
-  // By checking for isMounted and authLoading, we ensure that the initial server render
-  // and the first client render are identical (showing the spinner), preventing hydration mismatch.
-  // The actual content is rendered only on the client after it has mounted and auth state is confirmed.
-  if (!isMounted || authLoading) {
+  // To prevent hydration mismatch, we must render a static shell on the server and on the initial client render.
+  // We only render the dynamic content after the component has mounted on the client.
+  if (!isMounted) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
         <Spinner size="large" />
@@ -28,6 +27,15 @@ export default function RootLayoutClient({ children }: { children: React.ReactNo
     );
   }
 
+  // Once mounted, we can safely check the auth loading state to show the spinner.
+  if (authLoading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-background">
+        <Spinner size="large" />
+      </div>
+    );
+  }
+  
   const isAuthPage = pathname === '/sign-in' || pathname === '/sign-up' || pathname === '/finish-sign-in';
 
   if (isAuthPage) {
