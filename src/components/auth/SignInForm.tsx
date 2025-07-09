@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -111,7 +112,7 @@ export function SignInForm() {
         case 'auth/invalid-credential':
         case 'auth/wrong-password':
         case 'auth/user-not-found':
-          errorMessage = '입력하신 정보가 올바르지 않습니다. 비밀번호 또는 .env 파일의 Firebase 설정을 확인해주세요.';
+          errorMessage = '입력하신 이메일 또는 비밀번호가 올바르지 않습니다. 다시 확인해주세요.';
           break;
         case 'auth/too-many-requests':
           errorMessage = '너무 많은 로그인 시도를 하셨습니다. 잠시 후 다시 시도해주세요.';
@@ -152,7 +153,7 @@ export function SignInForm() {
       } else if (error.code === 'auth/account-exists-with-different-credential') {
         errorMessage = '이미 다른 방식으로 가입된 이메일입니다. 다른 로그인 방식을 시도해주세요.';
       } else if (error.code === 'auth/popup-closed-by-user') {
-        errorMessage = 'Google 로그인 창이 닫혔습니다. 다시 로그인하시려면 버튼을 다시 클릭해주세요.';
+        errorMessage = 'Google 로그인 창을 닫으셨습니다. 다시 시도하시려면 로그인 버튼을 클릭해주세요.';
       } else if (error.code === 'auth/popup-blocked') {
         errorMessage = 'Google 로그인 팝업이 차단되었습니다. 브라우저의 팝업 차단 설정을 확인해주세요.';
       } else if (error.code === 'auth/cancelled-popup-request') {

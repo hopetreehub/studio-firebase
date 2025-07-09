@@ -20,65 +20,62 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<AppUser | null>(null);
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(true); // Single loading state for initial auth check
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-  const [initialRenderComplete, setInitialRenderComplete] = useState(false);
-
-  useEffect(() => {
-    // This ensures that we don't try to render different things on server and client.
-    setInitialRenderComplete(true);
-  }, []);
 
   const refreshUser = () => {
     setRefreshTrigger(prev => prev + 1);
   };
 
   useEffect(() => {
-    if (auth) {
-      const unsubscribe = onAuthStateChanged(auth, async (currentFirebaseUser) => {
-        if (currentFirebaseUser) {
-          setFirebaseUser(currentFirebaseUser);
+    // This effect runs on the client.
+    // It sets up the listener for auth state changes.
+    // The 'loading' state will be true until this listener gets the first response.
+    if (!auth) {
+      console.warn("AuthProvider: Firebase auth is not initialized. Skipping auth state listener.");
+      setLoading(false);
+      return;
+    }
 
-          // Eagerly check for admin email to ensure immediate admin recognition
-          const adminEmails = ['admin@innerspell.com', 'junsupark9999@gmail.com'];
-          const isAdminByEmail = adminEmails.includes(currentFirebaseUser.email || '');
-          const profile = await getUserProfile(currentFirebaseUser.uid);
-          
-          if (profile) {
-             // Ensure the profile reflects the hardcoded admin rule, just in case.
-             if (isAdminByEmail) {
-               profile.role = 'admin';
-             }
-             setUser(profile);
-          } else {
-            // Fallback for when profile doc doesn't exist yet for a new user
-            setUser({
+    const unsubscribe = onAuthStateChanged(auth, async (currentFirebaseUser) => {
+      if (currentFirebaseUser) {
+        setFirebaseUser(currentFirebaseUser);
+        const profile = await getUserProfile(currentFirebaseUser.uid);
+        
+        // This is a safety check for admin roles based on email
+        const adminEmails = ['admin@innerspell.com', 'junsupark9999@gmail.com'];
+        if (profile) {
+           if (adminEmails.includes(profile.email || '')) {
+             profile.role = 'admin';
+           }
+           setUser(profile);
+        } else {
+           // Fallback for new users where profile might not exist yet
+           setUser({
               uid: currentFirebaseUser.uid,
               email: currentFirebaseUser.email,
               displayName: currentFirebaseUser.displayName,
               photoURL: currentFirebaseUser.photoURL,
-              role: isAdminByEmail ? 'admin' : 'user', // Apply admin role here too
+              role: adminEmails.includes(currentFirebaseUser.email || '') ? 'admin' : 'user',
               subscriptionStatus: 'free',
             });
-          }
-        } else {
-          setUser(null);
-          setFirebaseUser(null);
         }
-        setLoading(false);
-      });
-      return () => unsubscribe();
-    } else {
-      setLoading(false);
-      setUser(null);
-      setFirebaseUser(null);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+
+      } else {
+        setUser(null);
+        setFirebaseUser(null);
+      }
+      setLoading(false); // Auth check is complete, set loading to false.
+    });
+
+    return () => unsubscribe();
   }, [refreshTrigger]);
 
-  // We show a spinner until the initial client render is complete AND Firebase has checked the auth state.
-  // This prevents the hydration mismatch.
-  if (!initialRenderComplete || loading) {
+  // On the server, `loading` is always true, so we render the spinner.
+  // On the client, the initial render also has `loading` as true, so it renders the spinner, matching the server.
+  // After `onAuthStateChanged` fires, `loading` becomes false, and the component re-renders with the children.
+  // This is the standard, safe pattern to prevent hydration mismatches for auth state.
+  if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
         <LoaderCircle className="h-12 w-12 animate-spin text-primary" />
