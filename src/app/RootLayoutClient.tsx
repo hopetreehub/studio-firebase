@@ -17,9 +17,10 @@ export default function RootLayoutClient({ children }: { children: React.ReactNo
     setIsClient(true);
   }, []);
 
-  // Show a spinner if auth is still loading OR if it's the server render/initial client render.
-  // This ensures the same thing is rendered on the server and the first client pass, fixing hydration errors.
-  if (authLoading || !isClient) {
+  // First, handle the server-side render and the initial client-side render identically.
+  // By checking `!isClient`, we ensure this block runs on the server and on the very first client render,
+  // before the `useEffect` has a chance to run. This guarantees the output matches.
+  if (!isClient) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
         <Spinner size="large" />
@@ -27,7 +28,17 @@ export default function RootLayoutClient({ children }: { children: React.ReactNo
     );
   }
 
-  // After auth is loaded and we are on the client, decide the layout
+  // After the component has mounted on the client, `isClient` is true.
+  // Now we can safely check for auth loading state.
+  if (authLoading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-background">
+        <Spinner size="large" />
+      </div>
+    );
+  }
+
+  // Once we are on the client and auth is not loading, we can render the correct layout.
   const isAuthPage = pathname === '/sign-in' || pathname === '/sign-up' || pathname === '/finish-sign-in';
 
   if (isAuthPage) {
