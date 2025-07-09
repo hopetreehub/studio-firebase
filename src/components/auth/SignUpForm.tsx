@@ -26,6 +26,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useState } from 'react';
 import { Eye, EyeOff, User, Mail, KeyRound, Loader2, AlertCircle } from 'lucide-react';
+import { ToastAction } from "@/components/ui/toast";
 
 const formSchema = z.object({
   displayName: z
@@ -77,17 +78,28 @@ export function SignUpForm() {
       }
     } catch (error: any) {
       console.error("Sign-Up Error:", error);
-      let errorMessage = '회원가입 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
       if (error.code === 'auth/email-already-in-use') {
-        errorMessage = '이미 사용 중인 이메일입니다. 다른 이메일을 사용해주세요.';
-      } else if (error.code === 'auth/weak-password') {
-        errorMessage = '비밀번호는 6자 이상이어야 합니다.';
-      } else if (error.code === 'auth/operation-not-allowed') {
-        errorMessage = '이메일/비밀번호 방식의 회원가입이 비활성화되어 있습니다. 관리자에게 문의하세요.';
-      } else if (error.message) {
-        errorMessage = error.message;
+        toast({
+          variant: 'destructive',
+          title: '이미 가입된 이메일',
+          description: `이 이메일 주소는 이미 사용 중입니다. 로그인하시겠습니까?`,
+          action: (
+            <ToastAction altText="로그인 페이지로 이동" asChild>
+              <Link href="/sign-in">로그인</Link>
+            </ToastAction>
+          ),
+        });
+      } else {
+          let errorMessage = '회원가입 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
+          if (error.code === 'auth/weak-password') {
+            errorMessage = '비밀번호는 6자 이상이어야 합니다.';
+          } else if (error.code === 'auth/operation-not-allowed') {
+            errorMessage = '이메일/비밀번호 방식의 회원가입이 비활성화되어 있습니다. 관리자에게 문의하세요.';
+          } else if (error.message) {
+            errorMessage = error.message;
+          }
+          toast({ variant: 'destructive', title: '회원가입 오류', description: errorMessage });
       }
-      toast({ variant: 'destructive', title: '회원가입 오류', description: errorMessage });
     } finally {
       setLoading(false);
     }
