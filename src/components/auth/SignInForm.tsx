@@ -150,7 +150,7 @@ export function SignInForm() {
       } else if (error.code === 'auth/account-exists-with-different-credential') {
         errorMessage = '이미 다른 방식으로 가입된 이메일입니다. 다른 로그인 방식을 시도해주세요.';
       } else if (error.code === 'auth/popup-closed-by-user') {
-        errorMessage = 'Google 로그인 팝업이 닫혔습니다. 다시 시도해주세요.';
+        errorMessage = 'Google 로그인 창이 닫혔습니다. 다시 로그인하시려면 버튼을 다시 클릭해주세요.';
       } else if (error.code === 'auth/popup-blocked') {
         errorMessage = 'Google 로그인 팝업이 차단되었습니다. 브라우저의 팝업 차단 설정을 확인해주세요.';
       } else if (error.code === 'auth/cancelled-popup-request') {
