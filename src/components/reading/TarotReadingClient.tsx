@@ -441,7 +441,26 @@ export function TarotReadingClient() {
       toast({ title: '저장 완료', description: '리딩 기록이 성공적으로 저장되었습니다.' });
       setReadingJustSaved(true);
     } else {
-      toast({ variant: 'destructive', title: '저장 실패', description: typeof result.error === 'string' ? result.error : '리딩 저장 중 오류가 발생했습니다.' });
+      let errorMessage = '리딩 저장 중 알 수 없는 오류가 발생했습니다.';
+      if (typeof result.error === 'string') {
+        errorMessage = result.error;
+      } else if (result.error && typeof result.error === 'object' && !Array.isArray(result.error)) {
+        // Format Zod errors for better readability in the toast.
+        const errorDetails = Object.entries(result.error)
+          .map(([key, value]) => {
+            const messages = Array.isArray(value) ? value.join(', ') : String(value);
+            // Example: "drawnCards: 최소 한 장의 카드가 필요합니다."
+            return `${key} 필드 오류: ${messages}`;
+          })
+          .join('; ');
+        errorMessage = `입력 데이터에 문제가 있습니다. ${errorDetails || '세부 정보 없음'}`;
+      }
+      toast({ 
+        variant: 'destructive', 
+        title: '저장 실패', 
+        description: errorMessage,
+        duration: 9000, // Give more time to read detailed errors
+      });
     }
     setIsSavingReading(false);
   };

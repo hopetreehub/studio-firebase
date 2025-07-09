@@ -16,6 +16,7 @@ export async function saveUserReading(
     // Validate the input using the centralized schema from types/index.ts
     const validationResult = SaveReadingInputSchema.safeParse(input);
     if (!validationResult.success) {
+      console.error("리딩 저장 유효성 검사 실패:", JSON.stringify(validationResult.error.flatten(), null, 2));
       return { success: false, error: validationResult.error.flatten().fieldErrors };
     }
 
