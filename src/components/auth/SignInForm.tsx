@@ -107,20 +107,23 @@ export function SignInForm() {
       }
     } catch (error: any) {
       console.error("Sign-In Error:", error);
-      let errorMessage = '로그인 중 알 수 없는 오류가 발생했습니다.';
-      
-      if (error.code === 'auth/invalid-credential') {
-        errorMessage = '입력하신 이메일 또는 비밀번호가 올바르지 않습니다.';
-        form.setError("root.serverError", { type: "manual", message: errorMessage });
-      } else if (error.code === 'auth/too-many-requests') {
-        errorMessage = '너무 많은 로그인 시도를 하셨습니다. 잠시 후 다시 시도해주세요.';
-        form.setError("root.serverError", { type: "manual", message: errorMessage });
-      } else if (error.code === 'auth/operation-not-allowed') {
-        errorMessage = '이메일/비밀번호 방식의 로그인이 비활성화되어 있습니다. 관리자에게 문의하세요.';
-        form.setError("root.serverError", { type: "manual", message: errorMessage });
-      } else {
-        form.setError("root.serverError", { type: "manual", message: errorMessage });
+      let errorMessage: string;
+      switch (error.code) {
+        case 'auth/invalid-credential':
+        case 'auth/wrong-password': // Included for completeness
+        case 'auth/user-not-found': // Included for completeness
+          errorMessage = '입력하신 이메일 또는 비밀번호가 올바르지 않습니다.';
+          break;
+        case 'auth/too-many-requests':
+          errorMessage = '너무 많은 로그인 시도를 하셨습니다. 잠시 후 다시 시도해주세요.';
+          break;
+        case 'auth/operation-not-allowed':
+          errorMessage = '이메일/비밀번호 방식의 로그인이 비활성화되어 있습니다.';
+          break;
+        default:
+          errorMessage = '로그인 중 알 수 없는 오류가 발생했습니다.';
       }
+      form.setError("root.serverError", { type: "manual", message: errorMessage });
     } finally {
       setLoading(false);
     }
