@@ -1,4 +1,3 @@
-
 'use client';
 
 import type React from 'react';
@@ -17,10 +16,26 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// This component handles the loading state, ensuring children are only rendered
+// when the initial auth check is complete. This prevents content flashing
+// and ensures the useAuth hook is always available to children.
+const AuthStateGate = ({ children }: { children: ReactNode }) => {
+  const { loading } = useAuth();
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <LoaderCircle className="h-12 w-12 animate-spin text-primary" />
+      </div>
+    );
+  }
+  return <>{children}</>;
+};
+
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<AppUser | null>(null);
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
-  const [loading, setLoading] = useState(true); // Single loading state for initial auth check
+  const [loading, setLoading] = useState(true);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const refreshUser = () => {
@@ -28,9 +43,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
-    // This effect runs on the client.
-    // It sets up the listener for auth state changes.
-    // The 'loading' state will be true until this listener gets the first response.
     if (!auth) {
       console.warn("AuthProvider: Firebase auth is not initialized. Skipping auth state listener.");
       setLoading(false);
@@ -42,7 +54,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setFirebaseUser(currentFirebaseUser);
         const profile = await getUserProfile(currentFirebaseUser.uid);
         
-        // This is a safety check for admin roles based on email
         const adminEmails = ['admin@innerspell.com', 'junsupark9999@gmail.com'];
         if (profile) {
            if (adminEmails.includes(profile.email || '')) {
@@ -50,7 +61,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
            }
            setUser(profile);
         } else {
-           // Fallback for new users where profile might not exist yet
            setUser({
               uid: currentFirebaseUser.uid,
               email: currentFirebaseUser.email,
@@ -60,32 +70,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               subscriptionStatus: 'free',
             });
         }
-
       } else {
         setUser(null);
         setFirebaseUser(null);
       }
-      setLoading(false); // Auth check is complete, set loading to false.
+      setLoading(false);
     });
 
     return () => unsubscribe();
   }, [refreshTrigger]);
 
-  // On the server, `loading` is always true, so we render the spinner.
-  // On the client, the initial render also has `loading` as true, so it renders the spinner, matching the server.
-  // After `onAuthStateChanged` fires, `loading` becomes false, and the component re-renders with the children.
-  // This is the standard, safe pattern to prevent hydration mismatches for auth state.
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
-        <LoaderCircle className="h-12 w-12 animate-spin text-primary" />
-      </div>
-    );
-  }
-
   return (
     <AuthContext.Provider value={{ user, firebaseUser, loading, refreshUser }}>
-      {children}
+      <AuthStateGate>{children}</AuthStateGate>
     </AuthContext.Provider>
   );
 };
