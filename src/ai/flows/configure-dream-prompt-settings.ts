@@ -14,8 +14,13 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import { firestore } from '@/lib/firebase/admin';
 
+const supportedModels = [
+  'googleai/gemini-1.5-pro-latest',
+  'googleai/gemini-1.5-flash-latest',
+] as const;
+
 const ConfigureDreamPromptSettingsInputSchema = z.object({
-  model: z.string().describe('The AI model to use for generating interpretations.'),
+  model: z.enum(supportedModels).describe('The AI model to use for generating interpretations.'),
   promptTemplate: z
     .string()
     .describe('The new prompt template to use for generating dream interpretations.'),
