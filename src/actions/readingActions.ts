@@ -4,7 +4,8 @@
 import { z } from 'zod';
 import { firestore } from '@/lib/firebase/admin';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
-import type { SavedReading, SavedReadingCard, TarotCard } from '@/types';
+import type { SavedReading, SavedReadingCard } from '@/types';
+import { getCardById } from '@/lib/tarot-data';
 
 const SaveReadingInputSchema = z.object({
   userId: z.string().min(1, { message: '사용자 ID가 필요합니다.' }),
@@ -14,8 +15,6 @@ const SaveReadingInputSchema = z.object({
   drawnCards: z.array(
     z.object({
       id: z.string(),
-      name: z.string(),
-      imageSrc: z.string(), // No longer requires a full URL
       isReversed: z.boolean(),
       position: z.string().optional(),
     })
@@ -41,7 +40,7 @@ export async function saveUserReading(
       question,
       spreadName,
       spreadNumCards,
-      drawnCards,
+      drawnCards, // Now saves the simplified card info
       interpretationText,
       createdAt: FieldValue.serverTimestamp(),
     };
@@ -77,10 +76,22 @@ export async function getUserReadings(userId: string): Promise<SavedReading[]> {
       const data = doc.data();
       const now = new Date();
 
-      // Robustly handle createdAt timestamp
       const createdAt = (data?.createdAt && typeof data.createdAt.toDate === 'function')
         ? data.createdAt.toDate()
         : now;
+        
+      // Reconstruct full card details from saved IDs and orientation
+      const rawDrawnCards = (data?.drawnCards as { id: string; isReversed: boolean; position?: string }[]) || [];
+      const drawnCards: SavedReadingCard[] = rawDrawnCards.map(rawCard => {
+        const cardDetails = getCardById(rawCard.id);
+        return {
+          id: rawCard.id,
+          isReversed: rawCard.isReversed,
+          position: rawCard.position,
+          name: cardDetails?.name || '알 수 없는 카드',
+          imageSrc: cardDetails?.imageSrc || '/images/tarot/back.png', // Fallback image
+        };
+      });
 
       return {
         id: doc.id,
@@ -88,7 +99,7 @@ export async function getUserReadings(userId: string): Promise<SavedReading[]> {
         question: data?.question || 'No question provided',
         spreadName: data?.spreadName || 'Unknown Spread',
         spreadNumCards: data?.spreadNumCards || 0,
-        drawnCards: (data?.drawnCards as SavedReadingCard[]) || [],
+        drawnCards: drawnCards, // Use the reconstructed rich card data
         interpretationText: data?.interpretationText || 'No interpretation text.',
         createdAt: createdAt,
       } as SavedReading;

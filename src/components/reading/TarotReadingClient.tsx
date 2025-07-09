@@ -422,10 +422,8 @@ export function TarotReadingClient() {
     }
 
     setIsSavingReading(true);
-    const drawnCardsToSave: SavedReadingCard[] = selectedCardsForReading.map((card, index) => ({
+    const drawnCardsToSave = selectedCardsForReading.map((card, index) => ({
       id: card.id,
-      name: card.name,
-      imageSrc: card.imageSrc,
       isReversed: !!card.isReversed,
       position: selectedSpread.positions?.[index] || `카드 ${index + 1}`,
     }));
