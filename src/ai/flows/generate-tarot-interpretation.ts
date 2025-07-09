@@ -68,7 +68,9 @@ const generateTarotInterpretationFlow = ai.defineFlow(
       let userMessage = 'AI 해석 생성 중 일반 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
       const errorMessage = e.toString();
 
-      if (errorMessage.includes('503') || errorMessage.toLowerCase().includes('overloaded')) {
+      if (errorMessage.includes('429')) {
+        userMessage = 'Gemini API 사용량 한도를 초과했습니다. 잠시 후 다시 시도하거나, 관리자에게 문의하여 API 키를 확인해주세요. (오류 코드: 429)';
+      } else if (errorMessage.includes('503') || errorMessage.toLowerCase().includes('overloaded')) {
         userMessage = 'AI 모델에 대한 요청이 많아 현재 응답할 수 없습니다. 잠시 후 다시 시도해 주세요.';
       } else if ((e as any).finishReason && (e as any).finishReason !== 'STOP') {
          userMessage = `AI 생성이 완료되지 못했습니다 (이유: ${(e as any).finishReason}). 콘텐츠 안전 문제 또는 다른 제약 때문일 수 있습니다. 프롬프트를 조정하거나 안전 설정을 확인해보세요.`;

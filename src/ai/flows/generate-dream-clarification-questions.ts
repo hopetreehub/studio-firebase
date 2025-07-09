@@ -93,10 +93,10 @@ const generateDreamClarificationQuestionsFlow = ai.defineFlow(
       let userMessage = 'AI 질문 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
       const errorMessage = e.toString();
 
-      if (errorMessage.includes('503') || errorMessage.toLowerCase().includes('overloaded')) {
+      if (errorMessage.includes('429')) {
+        userMessage = 'Gemini API 사용량 한도를 초과했습니다. 잠시 후 다시 시도하거나, 관리자에게 문의하여 API 키를 확인해주세요. (오류 코드: 429)';
+      } else if (errorMessage.includes('503') || errorMessage.toLowerCase().includes('overloaded')) {
         userMessage = 'AI 모델에 대한 요청이 많아 현재 응답할 수 없습니다. 잠시 후 다시 시도해 주세요.';
-      } else if (errorMessage.includes('429')) {
-        userMessage = '현재 사용량이 많아 질문을 생성할 수 없습니다. 잠시 후 다시 시도해주세요. (오류 코드: 429)';
       } else if (errorMessage.includes("SAFETY")) {
          userMessage = "생성된 질문이 안전 기준에 부합하지 않아 차단되었습니다. 꿈 내용을 수정해 보세요.";
       } else if (errorMessage.includes("no valid candidates")) {
