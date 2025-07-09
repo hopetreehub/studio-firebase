@@ -25,7 +25,8 @@ export async function getUserProfile(uid: string): Promise<AppUser | null> {
     const profileDoc = await firestore.collection('profiles').doc(uid).get();
 
     let role = 'user'; // Default role
-    if (userRecord.email === 'admin@innerspell.com') {
+    const adminEmails = ['admin@innerspell.com', 'junsupark9999@gmail.com'];
+    if (userRecord.email && adminEmails.includes(userRecord.email)) {
       role = 'admin';
     } else if (userRecord.customClaims && userRecord.customClaims.role) {
       role = userRecord.customClaims.role as string;

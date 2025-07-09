@@ -40,7 +40,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setFirebaseUser(currentFirebaseUser);
 
           // Eagerly check for admin email to ensure immediate admin recognition
-          const isAdminByEmail = currentFirebaseUser.email === 'admin@innerspell.com';
+          const adminEmails = ['admin@innerspell.com', 'junsupark9999@gmail.com'];
+          const isAdminByEmail = adminEmails.includes(currentFirebaseUser.email || '');
           const profile = await getUserProfile(currentFirebaseUser.uid);
           
           if (profile) {
