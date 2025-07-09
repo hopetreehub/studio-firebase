@@ -1,4 +1,4 @@
-import { Loader2 } from 'lucide-react';
+import { LoaderCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface SpinnerProps {
@@ -14,6 +14,6 @@ export function Spinner({ size = 'medium', className }: SpinnerProps) {
   };
 
   return (
-    <Loader2 className={cn('animate-spin text-primary', sizeClasses[size], className)} />
+    <LoaderCircle className={cn('animate-spin text-primary', sizeClasses[size], className)} />
   );
 }

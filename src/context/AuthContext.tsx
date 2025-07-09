@@ -19,8 +19,14 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<AppUser | null>(null);
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
-  const [loading, setLoading] = useState(true); // Represents initial auth check
+  const [loading, setLoading] = useState(true);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [initialRenderComplete, setInitialRenderComplete] = useState(false);
+
+  useEffect(() => {
+    // This ensures that we don't try to render different things on server and client.
+    setInitialRenderComplete(true);
+  }, []);
 
   const refreshUser = () => {
     setRefreshTrigger(prev => prev + 1);
@@ -50,13 +56,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setUser(null);
           setFirebaseUser(null);
         }
-        // Only set loading to false, never back to true.
-        // This ensures the full-page loader only shows once.
         setLoading(false);
       });
       return () => unsubscribe();
     } else {
-      // If firebase auth is not configured, stop loading and set user to null
       setLoading(false);
       setUser(null);
       setFirebaseUser(null);
@@ -64,8 +67,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshTrigger]);
 
-  // While waiting for the initial auth state, show a loader
-  if (loading) {
+  // We show a spinner until the initial client render is complete AND Firebase has checked the auth state.
+  // This prevents the hydration mismatch.
+  if (!initialRenderComplete || loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
         <Spinner size="large" />
