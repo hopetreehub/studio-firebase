@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -20,11 +19,17 @@ import { useRouter } from 'next/navigation';
 import { LogOut, UserCircle, Settings, LogIn, UserPlus } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
+import { useState, useEffect } from 'react';
 
 export function UserNav() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleSignOut = async () => {
     if (!auth) {
@@ -44,8 +49,8 @@ export function UserNav() {
     }
   };
 
-  if (loading) {
-    return <Skeleton className="h-10 w-28" />;
+  if (!mounted || loading) {
+    return <Skeleton className="h-10 w-10 rounded-full" />;
   }
 
   if (!user) {

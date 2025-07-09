@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { UserNav } from './UserNav';
 import { ThemeToggle } from './ThemeToggle';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Menu } from 'lucide-react';
@@ -21,8 +21,14 @@ const baseNavItems = [
 export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user } = useAuth();
+  const [mounted, setMounted] = useState(false);
 
-  const navItems = user?.role === 'admin' 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Defer adding the admin link until after client-side hydration
+  const navItems = (mounted && user?.role === 'admin') 
     ? [...baseNavItems, { href: '/admin', label: '관리자' }] 
     : baseNavItems;
 
