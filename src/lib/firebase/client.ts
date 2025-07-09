@@ -1,20 +1,24 @@
 import { initializeApp, getApps, getApp, FirebaseApp } from "firebase/app";
 import { Auth, getAuth } from "firebase/auth";
 
-// Using the hardcoded configuration provided by the user for stability.
 const firebaseConfig = {
-  apiKey: "AIzaSyDgZBb3PEMFe58TxXFyeEAh6pzpeG_P9lg",
-  authDomain: "innerspell-an7ce.firebaseapp.com",
-  projectId: "innerspell-an7ce",
-  storageBucket: "innerspell-an7ce.firebasestorage.app",
-  messagingSenderId: "944680989471",
-  appId: "1:944680989471:web:ebd8a91794fb525e7f362a"
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID
 };
 
 let app: FirebaseApp | null = null;
 let auth: Auth | null = null;
 
-if (firebaseConfig.apiKey) {
+// Check if all required config values are present
+if (
+  firebaseConfig.apiKey &&
+  firebaseConfig.authDomain &&
+  firebaseConfig.projectId
+) {
   try {
     if (getApps().length === 0) {
       app = initializeApp(firebaseConfig);
@@ -30,8 +34,7 @@ if (firebaseConfig.apiKey) {
   }
 } else {
   // This warning is helpful for developers.
-  console.warn("Firebase configuration is missing. Authentication features will be disabled.");
+  console.warn("Firebase configuration is missing or incomplete. Authentication features will be disabled.");
 }
-
 
 export { app, auth };
