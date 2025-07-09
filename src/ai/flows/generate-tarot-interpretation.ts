@@ -1,4 +1,3 @@
-
 'use server';
 
 /**
@@ -65,11 +64,15 @@ const generateTarotInterpretationFlow = ai.defineFlow(
     } catch (e: any) {
       console.error('AI 프롬프트 실행 중 오류 발생:', e);
       let userMessage = 'AI 해석 생성 중 일반 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
-      if ((e as any).finishReason && (e as any).finishReason !== 'STOP') {
+      const errorMessage = e.toString();
+
+      if (errorMessage.includes('503') || errorMessage.toLowerCase().includes('overloaded')) {
+        userMessage = 'AI 모델에 대한 요청이 많아 현재 응답할 수 없습니다. 잠시 후 다시 시도해 주세요.';
+      } else if ((e as any).finishReason && (e as any).finishReason !== 'STOP') {
          userMessage = `AI 생성이 완료되지 못했습니다 (이유: ${(e as any).finishReason}). 콘텐츠 안전 문제 또는 다른 제약 때문일 수 있습니다. 프롬프트를 조정하거나 안전 설정을 확인해보세요.`;
-      } else if (e.toString && e.toString().includes("SAFETY")) {
+      } else if (errorMessage.includes("SAFETY")) {
          userMessage = "생성된 콘텐츠가 안전 기준에 부합하지 않아 차단되었습니다. 질문이나 해석 요청 내용을 수정해 보세요.";
-      } else if (e.toString && e.toString().includes("no valid candidates")) {
+      } else if (errorMessage.includes("no valid candidates")) {
          userMessage = "AI가 현재 요청에 대해 적절한 답변을 찾지 못했습니다. 질문을 조금 다르게 해보거나, 나중에 다시 시도해주세요. (No Valid Candidates)";
       } else {
         userMessage = `AI 해석 오류: ${e.message || '알 수 없는 오류'}.`;

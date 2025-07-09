@@ -1,4 +1,3 @@
-
 'use server';
 
 /**
@@ -76,8 +75,14 @@ const generateDreamInterpretationFlow = ai.defineFlow(
     } catch (e: any) {
       console.error('Error executing dream interpretation prompt:', e);
       let userMessage = 'AI 해석 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
-      if (e.toString && e.toString().includes("SAFETY")) {
+      const errorMessage = e.toString();
+
+      if (errorMessage.includes('503') || errorMessage.toLowerCase().includes('overloaded')) {
+        userMessage = 'AI 모델에 대한 요청이 많아 현재 응답할 수 없습니다. 잠시 후 다시 시도해 주세요.';
+      } else if (errorMessage.includes("SAFETY")) {
          userMessage = "생성된 콘텐츠가 안전 기준에 부합하지 않아 차단되었습니다. 꿈 내용을 수정해 보세요.";
+      } else {
+         userMessage = `AI 해석 오류: ${e.message || '알 수 없는 오류'}.`;
       }
       return { interpretation: userMessage };
     }
