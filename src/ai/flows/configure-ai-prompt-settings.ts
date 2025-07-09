@@ -43,7 +43,7 @@ const ConfigureAIPromptSettingsInputSchema = z.object({
       })
     )
     .optional()
-    .describe('Optional safety settings to apply to the prompt.'),
+    .describe('Optional safety settings to apply to the prompt. Only applicable to Google AI models.'),
 });
 export type ConfigureAIPromptSettingsInput = z.infer<
   typeof ConfigureAIPromptSettingsInputSchema
