@@ -15,6 +15,7 @@ import {z} from 'genkit';
 import { firestore } from '@/lib/firebase/admin'; // Import Firestore admin instance
 
 const ConfigureAIPromptSettingsInputSchema = z.object({
+  model: z.string().describe('The AI model to use for generating interpretations.'),
   promptTemplate: z
     .string()
     .describe('The new prompt template to use for generating tarot card interpretations.'),
@@ -66,11 +67,12 @@ const configureAIPromptSettingsFlow = ai.defineFlow(
   async (input: ConfigureAIPromptSettingsInput) => {
     try {
       const settingsToSave = {
+        model: input.model,
         promptTemplate: input.promptTemplate,
         safetySettings: input.safetySettings || [], // Ensure safetySettings is always an array
       };
 
-      await firestore.collection('aiConfiguration').doc('promptSettings').set(settingsToSave);
+      await firestore.collection('aiConfiguration').doc('promptSettings').set(settingsToSave, { merge: true });
       
       console.log('AI Prompt settings saved to Firestore:', settingsToSave);
 

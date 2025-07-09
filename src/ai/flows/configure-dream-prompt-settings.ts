@@ -15,6 +15,7 @@ import {z} from 'genkit';
 import { firestore } from '@/lib/firebase/admin';
 
 const ConfigureDreamPromptSettingsInputSchema = z.object({
+  model: z.string().describe('The AI model to use for generating interpretations.'),
   promptTemplate: z
     .string()
     .describe('The new prompt template to use for generating dream interpretations.'),
@@ -46,6 +47,7 @@ const configureDreamPromptSettingsFlow = ai.defineFlow(
   async (input: ConfigureDreamPromptSettingsInput) => {
     try {
       const settingsToSave = {
+        model: input.model,
         promptTemplate: input.promptTemplate,
       };
 

@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -39,13 +40,13 @@ const generateTarotInterpretationFlow = ai.defineFlow(
   async (flowInput: GenerateTarotInterpretationInput) => {
     try {
       // Fetch dynamic configuration from the centralized service
-      const { promptTemplate, safetySettings } = await getTarotPromptConfig();
+      const { promptTemplate, safetySettings, model } = await getTarotPromptConfig();
 
       const tarotPrompt = ai.definePrompt({
         name: 'generateTarotInterpretationRuntimePrompt', 
         input: { schema: GenerateTarotInterpretationInputSchema }, 
         prompt: promptTemplate, 
-        model: 'googleai/gemini-1.5-pro-latest', 
+        model: model, 
         config: {
           safetySettings: safetySettings.length > 0 ? safetySettings : undefined,
         },

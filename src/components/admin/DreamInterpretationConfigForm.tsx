@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState } from 'react';
@@ -14,12 +15,25 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import {
   configureDreamPromptSettings,
 } from '@/ai/flows/configure-dream-prompt-settings';
+
+const supportedModels = [
+  'googleai/gemini-1.5-pro-latest',
+  'googleai/gemini-1.5-flash-latest',
+  'googleai/gemini-1.0-pro',
+] as const;
 
 const DEFAULT_PROMPT = `[SYSTEM INSTRUCTIONS START]
 You are a sophisticated dream interpretation expert, integrating Eastern and Western symbolism, Jungian/Freudian psychology, spiritual philosophy, and, when provided, Saju (Four Pillars of Destiny) analysis. Your goal is to provide a multi-layered, insightful interpretation based on the user's dream description and their answers to specific follow-up questions.
@@ -81,6 +95,7 @@ Based on all the provided information, generate a structured and in-depth dream 
 `;
 
 const FormSchema = z.object({
+  model: z.enum(supportedModels),
   promptTemplate: z.string().min(10, {
     message: "프롬프트 템플릿은 최소 10자 이상이어야 합니다.",
   }),
@@ -93,6 +108,7 @@ export function DreamInterpretationConfigForm() {
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
+      model: 'googleai/gemini-1.5-pro-latest',
       promptTemplate: DEFAULT_PROMPT,
     },
   });
@@ -122,6 +138,36 @@ export function DreamInterpretationConfigForm() {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <FormField
           control={form.control}
+          name="model"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-lg font-semibold text-foreground/90">
+                AI 모델 선택
+              </FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="AI 모델을 선택하세요" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {supportedModels.map((model) => (
+                    <SelectItem key={model} value={model}>
+                      {model}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormDescription>
+                꿈 해몽에 사용할 AI 모델을 선택합니다. Pro 모델은 더 높은 품질의 결과를 제공합니다.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
           name="promptTemplate"
           render={({ field }) => (
             <FormItem>
@@ -136,7 +182,7 @@ export function DreamInterpretationConfigForm() {
                 />
               </FormControl>
               <FormDescription>
-                &#96;{"{{{dreamDescription}}}"}&#96;, &#96;{"{{{questionnaireAnswers}}}"}&#96;, &#96;{"{{{sajuInfo}}}"}&#96;와 같은 플레이스홀더(placeholder)를 사용하여 AI가 동적으로 내용을 채울 수 있도록 하세요.
+                &#96;{"{{{dreamDescription}}}"}&#96;, &#96;{"{{{clarifications}}}"}&#96;, &#96;{"{{{sajuInfo}}}"}&#96;와 같은 플레이스홀더(placeholder)를 사용하여 AI가 동적으로 내용을 채울 수 있도록 하세요.
               </FormDescription>
               <FormMessage />
             </FormItem>

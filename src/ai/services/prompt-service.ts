@@ -11,6 +11,7 @@ import type { SafetySetting } from '@genkit-ai/googleai';
 
 // --- TAROT INTERPRETATION CONFIG ---
 
+const DEFAULT_TAROT_MODEL = 'googleai/gemini-1.5-pro-latest';
 const DEFAULT_TAROT_PROMPT_TEMPLATE = `[SYSTEM INSTRUCTIONS START]
 You are a compassionate, insightful, and wise tarot reader. Your primary goal is to provide a hopeful, empowering, and positive interpretation based on the user's unique situation and the cards drawn. You must synthesize the provided information into a coherent, flowing narrative.
 
@@ -71,6 +72,7 @@ const DEFAULT_TAROT_SAFETY_SETTINGS: SafetySetting[] = [
 ];
 
 export interface TarotPromptConfig {
+  model: string;
   promptTemplate: string;
   safetySettings: SafetySetting[];
 }
@@ -81,12 +83,17 @@ export async function getTarotPromptConfig(): Promise<TarotPromptConfig> {
 
     if (!configDoc.exists) {
       return {
+        model: DEFAULT_TAROT_MODEL,
         promptTemplate: DEFAULT_TAROT_PROMPT_TEMPLATE,
         safetySettings: DEFAULT_TAROT_SAFETY_SETTINGS,
       };
     }
 
     const configData = configDoc.data()!;
+    const model = (configData.model && typeof configData.model === 'string' && configData.model.trim() !== '')
+      ? configData.model
+      : DEFAULT_TAROT_MODEL;
+    
     const promptTemplate = (configData.promptTemplate && typeof configData.promptTemplate === 'string' && configData.promptTemplate.trim() !== '')
       ? configData.promptTemplate
       : DEFAULT_TAROT_PROMPT_TEMPLATE;
@@ -95,10 +102,11 @@ export async function getTarotPromptConfig(): Promise<TarotPromptConfig> {
       ? configData.safetySettings.filter((s: any): s is SafetySetting => s.category && s.threshold)
       : DEFAULT_TAROT_SAFETY_SETTINGS;
     
-    return { promptTemplate, safetySettings: safetySettings.length > 0 ? safetySettings : DEFAULT_TAROT_SAFETY_SETTINGS };
+    return { model, promptTemplate, safetySettings: safetySettings.length > 0 ? safetySettings : DEFAULT_TAROT_SAFETY_SETTINGS };
   } catch (error) {
     console.error("Firestore에서 타로 프롬프트 설정을 불러오는 중 오류 발생. 기본값을 사용합니다:", error);
     return {
+      model: DEFAULT_TAROT_MODEL,
       promptTemplate: DEFAULT_TAROT_PROMPT_TEMPLATE,
       safetySettings: DEFAULT_TAROT_SAFETY_SETTINGS,
     };
@@ -107,6 +115,7 @@ export async function getTarotPromptConfig(): Promise<TarotPromptConfig> {
 
 // --- DREAM INTERPRETATION CONFIG ---
 
+const DEFAULT_DREAM_MODEL = 'googleai/gemini-1.5-pro-latest';
 const DEFAULT_DREAM_PROMPT_TEMPLATE = `[SYSTEM INSTRUCTIONS START]
 You are a sophisticated dream interpretation expert, integrating Eastern and Western symbolism, Jungian/Freudian psychology, spiritual philosophy, and, when provided, Saju (Four Pillars of Destiny) analysis. Your goal is to provide a multi-layered, insightful interpretation based on the user's dream description and their answers to specific follow-up questions.
 
@@ -190,19 +199,33 @@ Based on all the provided information, generate a structured and in-depth dream 
 [SYSTEM INSTRUCTIONS END]
 `;
 
-export async function getDreamPromptTemplate(): Promise<string> {
+export interface DreamPromptConfig {
+  model: string;
+  promptTemplate: string;
+}
+
+export async function getDreamPromptConfig(): Promise<DreamPromptConfig> {
    try {
     const configDoc = await firestore.collection('aiConfiguration').doc('dreamPromptSettings').get();
 
     if (configDoc.exists) {
-      const configData = configDoc.data();
-      if (configData?.promptTemplate && typeof configData.promptTemplate === 'string' && configData.promptTemplate.trim() !== '') {
-        console.log("꿈 해몽 프롬프트 템플릿을 Firestore에서 불러왔습니다.");
-        return configData.promptTemplate;
-      }
+      const configData = configDoc.data()!;
+      const model = (configData.model && typeof configData.model === 'string' && configData.model.trim() !== '')
+        ? configData.model
+        : DEFAULT_DREAM_MODEL;
+      const promptTemplate = (configData.promptTemplate && typeof configData.promptTemplate === 'string' && configData.promptTemplate.trim() !== '')
+        ? configData.promptTemplate
+        : DEFAULT_DREAM_PROMPT_TEMPLATE;
+
+      console.log("꿈 해몽 프롬프트 설정을 Firestore에서 불러왔습니다.");
+      return { model, promptTemplate };
     }
   } catch (error) {
     console.error("Firestore에서 꿈 해몽 프롬프트 설정을 불러오는 중 오류 발생. 기본값을 사용합니다.", error);
   }
-  return DEFAULT_DREAM_PROMPT_TEMPLATE;
+  
+  return {
+    model: DEFAULT_DREAM_MODEL,
+    promptTemplate: DEFAULT_DREAM_PROMPT_TEMPLATE,
+  };
 }

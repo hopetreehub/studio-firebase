@@ -33,6 +33,11 @@ import {
   ConfigureAIPromptSettingsInput,
 } from '@/ai/flows/configure-ai-prompt-settings';
 
+const supportedModels = [
+  'googleai/gemini-1.5-pro-latest',
+  'googleai/gemini-1.5-flash-latest',
+  'googleai/gemini-1.0-pro',
+] as const;
 
 const safetySettingSchema = z.object({
   category: z.enum([
@@ -51,6 +56,7 @@ const safetySettingSchema = z.object({
 });
 
 const formSchema = z.object({
+  model: z.enum(supportedModels),
   promptTemplate: z
     .string()
     .min(10, { message: '프롬프트 템플릿은 최소 10자 이상이어야 합니다.' }),
@@ -130,6 +136,7 @@ export function AIPromptConfigForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      model: 'googleai/gemini-1.5-pro-latest',
       promptTemplate: DEFAULT_PROMPT_TEMPLATE_FOR_FORM,
       safetySettings: [
         {
@@ -184,6 +191,36 @@ export function AIPromptConfigForm() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <FormField
+          control={form.control}
+          name="model"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-lg font-semibold text-foreground/90">
+                AI 모델 선택
+              </FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="AI 모델을 선택하세요" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {supportedModels.map((model) => (
+                    <SelectItem key={model} value={model}>
+                      {model}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormDescription>
+                타로 해석에 사용할 AI 모델을 선택합니다. Pro 모델은 더 높은 품질의 결과를 제공하지만 비용이 더 높을 수 있습니다.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
         <FormField
           control={form.control}
           name="promptTemplate"

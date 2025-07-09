@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -10,7 +11,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import { getDreamPromptTemplate } from '@/ai/services/prompt-service';
+import { getDreamPromptConfig } from '@/ai/services/prompt-service';
 import type { SafetySetting } from '@genkit-ai/googleai';
 
 const ClarificationSchema = z.object({
@@ -51,14 +52,14 @@ const generateDreamInterpretationFlow = ai.defineFlow(
   },
   async (flowInput: GenerateDreamInterpretationInput) => {
     try {
-      // Fetch dynamic prompt template from the centralized service
-      const promptTemplate = await getDreamPromptTemplate();
+      // Fetch dynamic prompt template and model from the centralized service
+      const { promptTemplate, model } = await getDreamPromptConfig();
 
       const dreamPrompt = ai.definePrompt({
         name: 'generateDreamInterpretationRuntimePrompt',
         input: { schema: GenerateDreamInterpretationInputSchema },
         prompt: promptTemplate,
-        model: 'googleai/gemini-1.5-pro-latest',
+        model: model,
         config: {
           safetySettings: DEFAULT_SAFETY_SETTINGS,
         },
