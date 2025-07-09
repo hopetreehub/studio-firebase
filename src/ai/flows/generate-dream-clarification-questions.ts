@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -12,6 +13,7 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import type { SafetySetting } from '@genkit-ai/googleai';
+import { getDreamPromptConfig } from '@/ai/services/prompt-service';
 
 const GenerateDreamClarificationQuestionsInputSchema = z.object({
   dreamDescription: z.string().describe("The user's initial, free-form description of their dream."),
@@ -42,11 +44,7 @@ const DEFAULT_SAFETY_SETTINGS: SafetySetting[] = [
   { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
 ];
 
-const prompt = ai.definePrompt({
-  name: 'generateDreamClarificationQuestionsPrompt',
-  input: { schema: GenerateDreamClarificationQuestionsInputSchema },
-  output: { schema: GenerateDreamClarificationQuestionsOutputSchema },
-  prompt: `You are a helpful assistant for a dream interpretation service. Your task is to analyze a user's initial dream description and generate 2 to 4 insightful, multiple-choice questions to gather more specific details. These questions will help provide a more accurate and personalized dream interpretation.
+const PROMPT_TEMPLATE = `You are a helpful assistant for a dream interpretation service. Your task is to analyze a user's initial dream description and generate 2 to 4 insightful, multiple-choice questions to gather more specific details. These questions will help provide a more accurate and personalized dream interpretation.
 
 RULES:
 1.  Generate between 2 and 4 questions.
@@ -59,11 +57,7 @@ RULES:
 User's Dream Description:
 "{{{dreamDescription}}}"
 
-Generate the clarification questions now.`,
-  config: {
-    safetySettings: DEFAULT_SAFETY_SETTINGS,
-  },
-});
+Generate the clarification questions now.`;
 
 
 const generateDreamClarificationQuestionsFlow = ai.defineFlow(
@@ -74,6 +68,20 @@ const generateDreamClarificationQuestionsFlow = ai.defineFlow(
   },
   async (input) => {
     try {
+      const { model } = await getDreamPromptConfig();
+      const isGoogleModel = model.startsWith('googleai/');
+
+      const prompt = ai.definePrompt({
+        name: 'generateDreamClarificationQuestionsRuntimePrompt',
+        input: { schema: GenerateDreamClarificationQuestionsInputSchema },
+        output: { schema: GenerateDreamClarificationQuestionsOutputSchema },
+        prompt: PROMPT_TEMPLATE,
+        model: model,
+        config: {
+          safetySettings: isGoogleModel ? DEFAULT_SAFETY_SETTINGS : undefined,
+        },
+      });
+
       const { output } = await prompt(input);
       if (!output) {
         throw new Error('AI가 추가 질문을 생성하지 못했습니다.');
@@ -87,6 +95,8 @@ const generateDreamClarificationQuestionsFlow = ai.defineFlow(
 
       if (errorMessage.includes('503') || errorMessage.toLowerCase().includes('overloaded')) {
         userMessage = 'AI 모델에 대한 요청이 많아 현재 응답할 수 없습니다. 잠시 후 다시 시도해 주세요.';
+      } else if (errorMessage.includes('429')) {
+        userMessage = '현재 사용량이 많아 질문을 생성할 수 없습니다. 잠시 후 다시 시도해주세요. (오류 코드: 429)';
       } else if (errorMessage.includes("SAFETY")) {
          userMessage = "생성된 질문이 안전 기준에 부합하지 않아 차단되었습니다. 꿈 내용을 수정해 보세요.";
       } else if (errorMessage.includes("no valid candidates")) {

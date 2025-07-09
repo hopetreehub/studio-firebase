@@ -54,6 +54,7 @@ const generateDreamInterpretationFlow = ai.defineFlow(
     try {
       // Fetch dynamic prompt template and model from the centralized service
       const { promptTemplate, model } = await getDreamPromptConfig();
+      const isGoogleModel = model.startsWith('googleai/');
 
       const dreamPrompt = ai.definePrompt({
         name: 'generateDreamInterpretationRuntimePrompt',
@@ -61,7 +62,7 @@ const generateDreamInterpretationFlow = ai.defineFlow(
         prompt: promptTemplate,
         model: model,
         config: {
-          safetySettings: DEFAULT_SAFETY_SETTINGS,
+          safetySettings: isGoogleModel ? DEFAULT_SAFETY_SETTINGS : undefined,
         },
       });
 

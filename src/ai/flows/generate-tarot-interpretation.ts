@@ -41,6 +41,7 @@ const generateTarotInterpretationFlow = ai.defineFlow(
     try {
       // Fetch dynamic configuration from the centralized service
       const { promptTemplate, safetySettings, model } = await getTarotPromptConfig();
+      const isGoogleModel = model.startsWith('googleai/');
 
       const tarotPrompt = ai.definePrompt({
         name: 'generateTarotInterpretationRuntimePrompt', 
@@ -48,7 +49,7 @@ const generateTarotInterpretationFlow = ai.defineFlow(
         prompt: promptTemplate, 
         model: model, 
         config: {
-          safetySettings: safetySettings.length > 0 ? safetySettings : undefined,
+          safetySettings: isGoogleModel && safetySettings.length > 0 ? safetySettings : undefined,
         },
       });
 

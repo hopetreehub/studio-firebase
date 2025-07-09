@@ -248,10 +248,10 @@ export function AIPromptConfigForm() {
 
         <div>
           <FormLabel className="mb-2 block text-lg font-semibold text-foreground/90">
-            안전 설정 (Safety Settings)
+            안전 설정 (Safety Settings for Google AI)
           </FormLabel>
           <FormDescription className="mb-4">
-            AI가 생성하는 콘텐츠의 유해성 차단 수준을 설정합니다. 각 카테고리별로 차단 임계값을 선택할 수 있습니다.
+            AI가 생성하는 콘텐츠의 유해성 차단 수준을 설정합니다. 이 설정은 Google AI 모델에만 적용됩니다.
           </FormDescription>
 
           {fields.map((item, index) => (
