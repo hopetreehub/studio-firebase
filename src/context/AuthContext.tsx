@@ -1,10 +1,11 @@
+
 'use client';
 
 import type React from 'react';
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { onAuthStateChanged, User as FirebaseUser } from 'firebase/auth';
 import { auth } from '@/lib/firebase/client';
-import { Spinner } from '@/components/ui/spinner';
+import { LoaderCircle } from 'lucide-react';
 import { getUserProfile, type AppUser } from '@/actions/userActions';
 
 interface AuthContextType {
@@ -37,9 +38,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const unsubscribe = onAuthStateChanged(auth, async (currentFirebaseUser) => {
         if (currentFirebaseUser) {
           setFirebaseUser(currentFirebaseUser);
+
+          // Eagerly check for admin email to ensure immediate admin recognition
+          const isAdminByEmail = currentFirebaseUser.email === 'admin@innerspell.com';
           const profile = await getUserProfile(currentFirebaseUser.uid);
           
           if (profile) {
+             // Ensure the profile reflects the hardcoded admin rule, just in case.
+             if (isAdminByEmail) {
+               profile.role = 'admin';
+             }
              setUser(profile);
           } else {
             // Fallback for when profile doc doesn't exist yet for a new user
@@ -48,7 +56,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               email: currentFirebaseUser.email,
               displayName: currentFirebaseUser.displayName,
               photoURL: currentFirebaseUser.photoURL,
-              role: 'user', // Default to 'user'
+              role: isAdminByEmail ? 'admin' : 'user', // Apply admin role here too
               subscriptionStatus: 'free',
             });
           }
@@ -72,7 +80,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   if (!initialRenderComplete || loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-background">
-        <Spinner size="large" />
+        <LoaderCircle className="h-12 w-12 animate-spin text-primary" />
       </div>
     );
   }
