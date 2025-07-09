@@ -57,7 +57,7 @@ export function SignInForm() {
   const onPasswordlessSubmit = async (values: z.infer<typeof passwordlessSchema>) => {
     setLoading(true);
     if (!auth) {
-        toast({ variant: 'destructive', title: '설정 오류', description: 'Firebase 인증이 설정되지 않았습니다.' });
+        toast({ variant: 'destructive', title: '설정 오류', description: 'Firebase 인증이 설정되지 않았습니다. .env 파일을 확인해주세요.' });
         setLoading(false);
         return;
     }
@@ -94,7 +94,7 @@ export function SignInForm() {
     form.clearErrors();
     setGoogleError(null);
     if (!auth) {
-        toast({ variant: 'destructive', title: '설정 오류', description: 'Firebase 인증이 설정되지 않았습니다. 관리자에게 문의하세요.' });
+        toast({ variant: 'destructive', title: '설정 오류', description: 'Firebase 인증이 설정되지 않았습니다. .env 파일을 확인해주세요.' });
         setLoading(false);
         return;
     }
@@ -110,9 +110,9 @@ export function SignInForm() {
       let errorMessage: string;
       switch (error.code) {
         case 'auth/invalid-credential':
-        case 'auth/wrong-password': // Included for completeness
-        case 'auth/user-not-found': // Included for completeness
-          errorMessage = '입력하신 이메일 또는 비밀번호가 올바르지 않습니다.';
+        case 'auth/wrong-password':
+        case 'auth/user-not-found':
+          errorMessage = '입력하신 정보가 올바르지 않습니다. 비밀번호 또는 .env 파일의 Firebase 설정을 확인해주세요.';
           break;
         case 'auth/too-many-requests':
           errorMessage = '너무 많은 로그인 시도를 하셨습니다. 잠시 후 다시 시도해주세요.';
@@ -133,7 +133,7 @@ export function SignInForm() {
     setLoading(true);
     setGoogleError(null);
     if (!auth) {
-        toast({ variant: 'destructive', title: '설정 오류', description: 'Firebase 인증이 설정되지 않았습니다. 관리자에게 문의하세요.' });
+        toast({ variant: 'destructive', title: '설정 오류', description: 'Firebase 인증이 설정되지 않았습니다. .env 파일을 확인해주세요.' });
         setLoading(false);
         return;
     }
