@@ -15,7 +15,7 @@ const SaveReadingInputSchema = z.object({
     z.object({
       id: z.string(),
       name: z.string(),
-      imageSrc: z.string().url(),
+      imageSrc: z.string(), // No longer requires a full URL
       isReversed: z.boolean(),
       position: z.string().optional(),
     })
