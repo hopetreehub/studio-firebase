@@ -45,7 +45,7 @@ const generateTarotInterpretationFlow = ai.defineFlow(
         name: 'generateTarotInterpretationRuntimePrompt', 
         input: { schema: GenerateTarotInterpretationInputSchema }, 
         prompt: promptTemplate, 
-        model: 'googleai/gemini-1.5-flash-latest', 
+        model: 'googleai/gemini-1.5-pro-latest', 
         config: {
           safetySettings: safetySettings.length > 0 ? safetySettings : undefined,
         },
