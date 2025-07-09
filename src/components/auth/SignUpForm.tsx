@@ -177,7 +177,7 @@ export function SignUpForm() {
                 <div className="relative">
                   <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                   <FormControl>
-                    <Input className="pl-10" placeholder="사용하실 닉네임을 입력하세요" {...field} />
+                    <Input className="pl-10" placeholder="사용하실 닉네임을 입력하세요" {...field} autoComplete="name" />
                   </FormControl>
                 </div>
                 <FormMessage />
@@ -193,7 +193,7 @@ export function SignUpForm() {
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                   <FormControl>
-                    <Input className="pl-10" placeholder="your@email.com" {...field} />
+                    <Input className="pl-10" placeholder="your@email.com" {...field} autoComplete="email" />
                   </FormControl>
                 </div>
                 <FormMessage />
@@ -214,6 +214,7 @@ export function SignUpForm() {
                       type={showPassword ? 'text' : 'password'}
                       placeholder="•••••••• (6자 이상)"
                       {...field}
+                      autoComplete="new-password"
                     />
                   </FormControl>
                   <Button

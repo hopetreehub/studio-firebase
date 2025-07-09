@@ -16,22 +16,6 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// This component handles the loading state, ensuring children are only rendered
-// when the initial auth check is complete. This prevents content flashing
-// and ensures the useAuth hook is always available to children.
-const AuthStateGate = ({ children }: { children: ReactNode }) => {
-  const { loading } = useAuth();
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-background">
-        <LoaderCircle className="h-12 w-12 animate-spin text-primary" />
-      </div>
-    );
-  }
-  return <>{children}</>;
-};
-
-
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<AppUser | null>(null);
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
@@ -80,9 +64,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => unsubscribe();
   }, [refreshTrigger]);
 
+  const value = { user, firebaseUser, loading, refreshUser };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <LoaderCircle className="h-12 w-12 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
-    <AuthContext.Provider value={{ user, firebaseUser, loading, refreshUser }}>
-      <AuthStateGate>{children}</AuthStateGate>
+    <AuthContext.Provider value={value}>
+      {children}
     </AuthContext.Provider>
   );
 };

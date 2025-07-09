@@ -195,7 +195,7 @@ export function SignInForm() {
                             <div className="relative">
                             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                             <FormControl>
-                                <Input className="pl-10" placeholder="your@email.com" {...field} />
+                                <Input className="pl-10" placeholder="your@email.com" {...field} autoComplete="email" />
                             </FormControl>
                             </div>
                             <FormMessage />
@@ -227,7 +227,7 @@ export function SignInForm() {
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                   <FormControl>
-                    <Input className="pl-10" placeholder="your@email.com" {...field} />
+                    <Input className="pl-10" placeholder="your@email.com" {...field} autoComplete="email" />
                   </FormControl>
                 </div>
                 <FormMessage />
@@ -248,6 +248,7 @@ export function SignInForm() {
                       type={showPassword ? 'text' : 'password'}
                       placeholder="••••••••"
                       {...field}
+                      autoComplete="current-password"
                     />
                   </FormControl>
                   <Button
