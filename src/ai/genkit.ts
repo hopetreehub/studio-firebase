@@ -5,5 +5,6 @@ const plugins: GenkitPlugin[] = [googleAI()];
 
 export const ai = genkit({
   plugins,
-  model: 'googleai/gemini-1.5-pro-latest',
+  // Model is now specified dynamically in each flow based on Admin settings.
+  // Removing the global default model.
 });

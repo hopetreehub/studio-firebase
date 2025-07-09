@@ -36,7 +36,6 @@ import {
 const supportedModels = [
   'googleai/gemini-1.5-pro-latest',
   'googleai/gemini-1.5-flash-latest',
-  'googleai/gemini-1.0-pro',
 ] as const;
 
 const safetySettingSchema = z.object({
