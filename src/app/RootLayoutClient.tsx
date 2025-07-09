@@ -6,18 +6,20 @@ import { AuthLayout } from '@/components/layout/AuthLayout';
 import type React from 'react';
 import { useState, useEffect } from 'react';
 import { Spinner } from '@/components/ui/spinner';
+import { useAuth } from '@/context/AuthContext';
 
 export default function RootLayoutClient({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { loading: authLoading } = useAuth();
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
   }, []);
 
-  if (!isClient) {
-    // On the server and during the initial client render, show a generic loading state
-    // to avoid a hydration mismatch caused by usePathname returning a different value.
+  // Show a spinner if auth is still loading OR if it's the server render/initial client render.
+  // This ensures the same thing is rendered on the server and the first client pass, fixing hydration errors.
+  if (authLoading || !isClient) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
         <Spinner size="large" />
@@ -25,6 +27,7 @@ export default function RootLayoutClient({ children }: { children: React.ReactNo
     );
   }
 
+  // After auth is loaded and we are on the client, decide the layout
   const isAuthPage = pathname === '/sign-in' || pathname === '/sign-up' || pathname === '/finish-sign-in';
 
   if (isAuthPage) {
