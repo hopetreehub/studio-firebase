@@ -11,16 +11,16 @@ import { useAuth } from '@/context/AuthContext';
 export default function RootLayoutClient({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { loading: authLoading } = useAuth();
-  const [isClient, setIsClient] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
-    setIsClient(true);
+    setIsMounted(true);
   }, []);
 
-  // First, handle the server-side render and the initial client-side render identically.
-  // By checking `!isClient`, we ensure this block runs on the server and on the very first client render,
-  // before the `useEffect` has a chance to run. This guarantees the output matches.
-  if (!isClient) {
+  // By checking for isMounted and authLoading, we ensure that the initial server render
+  // and the first client render are identical (showing the spinner), preventing hydration mismatch.
+  // The actual content is rendered only on the client after it has mounted and auth state is confirmed.
+  if (!isMounted || authLoading) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-background">
         <Spinner size="large" />
@@ -28,17 +28,6 @@ export default function RootLayoutClient({ children }: { children: React.ReactNo
     );
   }
 
-  // After the component has mounted on the client, `isClient` is true.
-  // Now we can safely check for auth loading state.
-  if (authLoading) {
-    return (
-      <div className="flex h-screen w-full items-center justify-center bg-background">
-        <Spinner size="large" />
-      </div>
-    );
-  }
-
-  // Once we are on the client and auth is not loading, we can render the correct layout.
   const isAuthPage = pathname === '/sign-in' || pathname === '/sign-up' || pathname === '/finish-sign-in';
 
   if (isAuthPage) {
