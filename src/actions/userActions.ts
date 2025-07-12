@@ -25,8 +25,9 @@ export async function getUserProfile(uid: string): Promise<AppUser | null> {
     const profileDoc = await firestore.collection('profiles').doc(uid).get();
 
     let role = 'user'; // Default role
-    const adminEmails = ['admin@innerspell.com', 'junsupark9999@gmail.com'];
-    if (userRecord.email && adminEmails.includes(userRecord.email)) {
+    const adminEmails = (process.env.ADMIN_EMAILS || 'admin@innerspell.com,junsupark9999@gmail.com').split(',');
+    
+    if (userRecord.email && adminEmails.includes(userRecord.email.trim())) {
       role = 'admin';
     } else if (userRecord.customClaims && userRecord.customClaims.role) {
       role = userRecord.customClaims.role as string;
@@ -98,6 +99,7 @@ export async function listFirebaseUsers(
     const listUsersResult = await admin.auth().listUsers(limit, pageToken);
     const users: AppUser[] = await Promise.all(listUsersResult.users.map(async (userRecord: UserRecord) => {
       const profile = await getUserProfile(userRecord.uid);
+      // Fallback for cases where profile might be null (though unlikely for existing users)
       return {
         uid: userRecord.uid,
         email: userRecord.email,
@@ -106,8 +108,8 @@ export async function listFirebaseUsers(
         creationTime: userRecord.metadata.creationTime,
         lastSignInTime: userRecord.metadata.lastSignInTime,
         role: profile?.role || 'user',
-        birthDate: profile?.birthDate,
-        sajuInfo: profile?.sajuInfo,
+        birthDate: profile?.birthDate || '',
+        sajuInfo: profile?.sajuInfo || '',
         subscriptionStatus: profile?.subscriptionStatus || 'free',
       };
     }));

@@ -110,18 +110,18 @@ export function SignInForm() {
       let errorMessage: string;
       switch (error.code) {
         case 'auth/invalid-credential':
-        case 'auth/wrong-password':
         case 'auth/user-not-found':
+        case 'auth/wrong-password':
           errorMessage = '입력하신 이메일 또는 비밀번호가 올바르지 않습니다. 다시 확인해주세요.';
           break;
         case 'auth/too-many-requests':
-          errorMessage = '너무 많은 로그인 시도를 하셨습니다. 잠시 후 다시 시도해주세요.';
+          errorMessage = '비정상적인 활동으로 인해 이 기기에서의 모든 요청이 일시적으로 차단되었습니다. 잠시 후 다시 시도해주세요.';
           break;
-        case 'auth/operation-not-allowed':
-          errorMessage = '이메일/비밀번호 방식의 로그인이 비활성화되어 있습니다.';
-          break;
+        case 'auth/invalid-email':
+           errorMessage = '입력하신 이메일 주소 형식이 올바르지 않습니다.';
+           break;
         default:
-          errorMessage = '로그인 중 알 수 없는 오류가 발생했습니다.';
+          errorMessage = '로그인 중 알 수 없는 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
       }
       form.setError("root.serverError", { type: "manual", message: errorMessage });
     } finally {
@@ -148,22 +148,16 @@ export function SignInForm() {
     } catch (error: any) {
       console.error("Google Sign-In Error:", error);
       let errorMessage = 'Google 로그인 중 오류가 발생했습니다.';
-       if (error.code === 'auth/unauthorized-domain') {
-        errorMessage = '이 앱의 도메인이 Google 로그인에 대해 승인되지 않았습니다. Firebase 콘솔의 Authentication > Settings > Authorized domains에 현재 도메인을 추가해주세요.';
+       if (error.code === 'auth/popup-closed-by-user') {
+        errorMessage = 'Google 로그인 창을 닫으셨습니다. 다시 시도하시려면 로그인 버튼을 클릭해주세요.';
       } else if (error.code === 'auth/account-exists-with-different-credential') {
         errorMessage = '이미 다른 방식으로 가입된 이메일입니다. 다른 로그인 방식을 시도해주세요.';
-      } else if (error.code === 'auth/popup-closed-by-user') {
-        errorMessage = 'Google 로그인 창을 닫으셨습니다. 다시 시도하시려면 로그인 버튼을 클릭해주세요.';
+      } else if (error.code === 'auth/unauthorized-domain') {
+        errorMessage = '이 앱의 도메인이 Google 로그인에 대해 승인되지 않았습니다. Firebase 콘솔 설정을 확인해주세요.';
       } else if (error.code === 'auth/popup-blocked') {
         errorMessage = 'Google 로그인 팝업이 차단되었습니다. 브라우저의 팝업 차단 설정을 확인해주세요.';
-      } else if (error.code === 'auth/cancelled-popup-request') {
-        errorMessage = 'Google 로그인 요청이 여러 번 발생하여 취소되었습니다. 잠시 후 다시 시도해주세요.';
       } else if (error.code === 'auth/operation-not-allowed') {
         errorMessage = 'Google 로그인이 Firebase 프로젝트에서 활성화되지 않았습니다. 관리자에게 문의하세요.';
-      } else if (error.code) {
-        errorMessage = `오류 (${error.code}): ${error.message}`;
-      } else if (error.message) {
-        errorMessage = error.message;
       }
       setGoogleError(errorMessage);
     } finally {
