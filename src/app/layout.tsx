@@ -9,7 +9,7 @@ import { ThemeProvider } from '@/components/layout/ThemeProvider';
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000';
 
 export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl), // Added for resolving relative image paths
+  metadataBase: new URL(siteUrl),
   title: {
     default: 'InnerSpell - 당신의 내면을 탐험하세요',
     template: '%s - InnerSpell',
@@ -42,17 +42,15 @@ export const metadata: Metadata = {
       template: '%s - InnerSpell',
     },
     description: 'AI 기반 타로 해석, 타로 카드 백과사전, 영적 성장 블로그를 통해 당신의 내면을 발견하세요.',
-    images: [`${siteUrl}/logo-og.png`], // Ensure absolute URL for Twitter
-    // site: '@yourTwitterHandle', 
-    // creator: '@creatorTwitterHandle', 
+    images: [`${siteUrl}/logo-og.png`],
   },
-  icons: null, // Explicitly disable auto icon generation to prevent 404 errors
+  icons: null,
 };
 
 export const viewport: Viewport = {
   themeColor: [ 
-    { media: '(prefers-color-scheme: light)', color: '#F3E5F5' }, // Light theme background
-    { media: '(prefers-color-scheme: dark)', color: '#221C2E' },  // Dark theme background (approximated)
+    { media: '(prefers-color-scheme: light)', color: '#F3E5F5' },
+    { media: '(prefers-color-scheme: dark)', color: '#221C2E' },
   ],
 };
 
@@ -69,13 +67,6 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,400;0,500;0,700;1,400;1,500;1,700&display=swap" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/css2?family=Belleza&display=swap" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet" />
-        {/* 
-          If you are integrating Google AdSense, the script provided by AdSense
-          would typically be placed here, or in a Script component from next/script
-          for better performance management. Example:
-          <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-YOUR_PUBLISHER_ID"
-               crossOrigin="anonymous"></script> 
-        */}
       </head>
       <body className="font-body antialiased">
         <ThemeProvider
