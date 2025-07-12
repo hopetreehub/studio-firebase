@@ -13,28 +13,30 @@ const firebaseConfig = {
 let app: FirebaseApp | null = null;
 let auth: Auth | null = null;
 
-// Check if all required config values are present
-if (
+// Check if all required config values are present and valid strings
+const isConfigValid = 
   firebaseConfig.apiKey &&
   firebaseConfig.authDomain &&
-  firebaseConfig.projectId
-) {
+  firebaseConfig.projectId;
+
+if (isConfigValid) {
   try {
-    if (getApps().length === 0) {
-      app = initializeApp(firebaseConfig);
-    } else {
-      app = getApp();
-    }
+    // Initialize Firebase
+    app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
     auth = getAuth(app);
   } catch (error) {
     console.error("Firebase initialization error:", error);
-    // If initialization fails, ensure app and auth are null
+    // If initialization fails for any reason, ensure app and auth are null
     app = null;
     auth = null;
   }
 } else {
-  // This warning is helpful for developers.
-  console.warn("Firebase configuration is missing or incomplete. Authentication features will be disabled.");
+  // This warning is crucial for developers to identify configuration issues.
+  console.warn(
+    "Firebase configuration is missing or incomplete. " +
+    "Please check your .env file and ensure all NEXT_PUBLIC_FIREBASE_* variables are set correctly. " +
+    "Authentication features will be disabled."
+  );
 }
 
 export { app, auth };

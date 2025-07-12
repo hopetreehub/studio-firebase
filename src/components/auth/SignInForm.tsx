@@ -40,7 +40,6 @@ export function SignInForm() {
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [googleError, setGoogleError] = useState<string | null>(null);
   const [showPasswordlessForm, setShowPasswordlessForm] = useState(false);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -92,7 +91,6 @@ export function SignInForm() {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setLoading(true);
     form.clearErrors();
-    setGoogleError(null);
     if (!auth) {
         toast({ variant: 'destructive', title: '설정 오류', description: 'Firebase 인증이 설정되지 않았습니다. .env 파일을 확인해주세요.' });
         setLoading(false);
@@ -121,7 +119,7 @@ export function SignInForm() {
            errorMessage = '입력하신 이메일 주소 형식이 올바르지 않습니다.';
            break;
         default:
-          errorMessage = '로그인 중 알 수 없는 오류가 발생했습니다. 잠시 후 다시 시도해주세요.';
+          errorMessage = `로그인 중 알 수 없는 오류가 발생했습니다. (코드: ${error.code})`;
       }
       form.setError("root.serverError", { type: "manual", message: errorMessage });
     } finally {
@@ -131,7 +129,7 @@ export function SignInForm() {
 
   const handleGoogleSignIn = async () => {
     setLoading(true);
-    setGoogleError(null);
+    form.clearErrors();
     if (!auth) {
         toast({ variant: 'destructive', title: '설정 오류', description: 'Firebase 인증이 설정되지 않았습니다. .env 파일을 확인해주세요.' });
         setLoading(false);
@@ -158,8 +156,10 @@ export function SignInForm() {
         errorMessage = 'Google 로그인 팝업이 차단되었습니다. 브라우저의 팝업 차단 설정을 확인해주세요.';
       } else if (error.code === 'auth/operation-not-allowed') {
         errorMessage = 'Google 로그인이 Firebase 프로젝트에서 활성화되지 않았습니다. 관리자에게 문의하세요.';
+      } else {
+        errorMessage = `Google 로그인 중 오류가 발생했습니다. (코드: ${error.code})`;
       }
-      setGoogleError(errorMessage);
+      form.setError("root.serverError", { type: "manual", message: errorMessage });
     } finally {
       setLoading(false);
     }
@@ -262,8 +262,8 @@ export function SignInForm() {
           />
           {form.formState.errors.root?.serverError && (
             <div className="flex items-center text-sm font-medium text-destructive bg-destructive/10 p-3 rounded-md">
-              <AlertCircle className="h-4 w-4 mr-2" />
-              {form.formState.errors.root.serverError.message}
+              <AlertCircle className="h-4 w-4 mr-2 shrink-0" />
+              <span>{form.formState.errors.root.serverError.message}</span>
             </div>
           )}
            <div className="text-right">
@@ -292,12 +292,6 @@ export function SignInForm() {
         <svg className="mr-2 h-4 w-4" aria-hidden="true" focusable="false" data-prefix="fab" data-icon="google" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488 512"><path fill="currentColor" d="M488 261.8C488 403.3 391.1 504 248 504 110.8 504 0 393.2 0 256S110.8 8 248 8c66.8 0 123 24.5 166.3 64.9l-67.5 64.9C258.5 52.6 94.3 116.6 94.3 256c0 86.5 69.1 156.6 153.7 156.6 98.2 0 135-70.4 140.8-106.9H248v-85.3h236.1c2.3 12.7 3.9 24.9 3.9 41.4z"></path></svg>
         Google 계정으로 로그인
       </Button>
-      {googleError && (
-        <div className="mt-4 flex items-center text-sm font-medium text-destructive bg-destructive/10 p-3 rounded-md">
-            <AlertCircle className="h-4 w-4 mr-2" />
-            {googleError}
-        </div>
-      )}
       <p className="mt-6 text-center text-sm text-muted-foreground">
         계정이 없으신가요?{' '}
         <Link href="/sign-up" className="font-medium text-primary hover:underline">
