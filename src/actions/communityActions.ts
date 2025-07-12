@@ -57,52 +57,46 @@ function mapDocToCommunityPost(doc: FirebaseFirestore.DocumentSnapshot): Communi
 
 // Get community posts for a specific category
 export async function getCommunityPosts(category: CommunityPostCategory): Promise<CommunityPost[]> {
-  const snapshot = await firestore.collection('communityPosts')
-    .where('category', '==', category)
-    .orderBy('createdAt', 'desc')
-    .get()
-    .catch(error => {
-      console.error(`CRITICAL: Error fetching posts for category '${category}' from Firestore:`, error);
-      return null; // Return null on failure to prevent crash
-    });
-
-  if (!snapshot) {
-    // An error occurred during the fetch.
+  try {
+    const snapshot = await firestore.collection('communityPosts')
+      .where('category', '==', category)
+      .orderBy('createdAt', 'desc')
+      .get();
+      
+    if (snapshot.empty) {
+      return [];
+    }
+    return snapshot.docs.map(mapDocToCommunityPost);
+  } catch (error) {
+    console.error(`CRITICAL: Error fetching posts for category '${category}' from Firestore:`, error);
+    // On failure, return an empty array to prevent the page from crashing.
     return [];
   }
-    
-  if (snapshot.empty) {
-    return [];
-  }
-  return snapshot.docs.map(mapDocToCommunityPost);
 }
 
 // Get a single community post by ID
 export async function getCommunityPostById(postId: string): Promise<CommunityPost | null> {
-  const docRef = firestore.collection('communityPosts').doc(postId);
-  
-  const doc = await docRef.get().catch(error => {
-    console.error(`CRITICAL: Error fetching post with ID ${postId}:`, error);
-    return null; // Return null on failure
-  });
+  try {
+    const docRef = firestore.collection('communityPosts').doc(postId);
+    
+    const doc = await docRef.get();
 
-  if (!doc) {
-    // An error occurred during the fetch.
-    return null;
+    if (!doc.exists) {
+      console.log(`Post with ID ${postId} not found in Firestore.`);
+      return null;
+    }
+    
+    // Increment view count without affecting the data returned to this request.
+    // This is a "fire-and-forget" operation for performance.
+    docRef.update({ viewCount: FieldValue.increment(1) }).catch(err => {
+        console.error(`Failed to increment view count for post ${postId}:`, err);
+    });
+    
+    return mapDocToCommunityPost(doc);
+  } catch (error) {
+     console.error(`CRITICAL: Error fetching post with ID ${postId}:`, error);
+     return null; // Return null on failure to prevent crash
   }
-  
-  if (!doc.exists) {
-    console.log(`Post with ID ${postId} not found in Firestore.`);
-    return null;
-  }
-  
-  // Increment view count without affecting the data returned to this request.
-  // This is a "fire-and-forget" operation for performance.
-  docRef.update({ viewCount: FieldValue.increment(1) }).catch(err => {
-      console.error(`Failed to increment view count for post ${postId}:`, err);
-  });
-  
-  return mapDocToCommunityPost(doc);
 }
 
 
