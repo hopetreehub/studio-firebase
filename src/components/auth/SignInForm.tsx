@@ -105,12 +105,20 @@ export function SignInForm() {
       }
     } catch (error: any) {
       console.error("Sign-In Error:", error);
-      let errorMessage: string;
+      let errorMessage: React.ReactNode = `로그인 중 알 수 없는 오류가 발생했습니다. (코드: ${error.code})`;
+      
       switch (error.code) {
         case 'auth/invalid-credential':
         case 'auth/user-not-found':
         case 'auth/wrong-password':
-          errorMessage = '입력하신 이메일 또는 비밀번호가 올바르지 않습니다. 다시 확인해주세요.';
+          errorMessage = (
+            <span>
+              입력하신 이메일 또는 비밀번호가 올바르지 않습니다. 계정이 없으신가요?{' '}
+              <Link href="/sign-up" className="underline font-bold">
+                회원가입
+              </Link>
+            </span>
+          );
           break;
         case 'auth/too-many-requests':
           errorMessage = '비정상적인 활동으로 인해 이 기기에서의 모든 요청이 일시적으로 차단되었습니다. 잠시 후 다시 시도해주세요.';
@@ -121,7 +129,7 @@ export function SignInForm() {
         default:
           errorMessage = `로그인 중 알 수 없는 오류가 발생했습니다. (코드: ${error.code})`;
       }
-      form.setError("root.serverError", { type: "manual", message: errorMessage });
+      form.setError("root.serverError", { type: "manual", message: errorMessage as string });
     } finally {
       setLoading(false);
     }
@@ -261,8 +269,8 @@ export function SignInForm() {
             )}
           />
           {form.formState.errors.root?.serverError && (
-            <div className="flex items-center text-sm font-medium text-destructive bg-destructive/10 p-3 rounded-md">
-              <AlertCircle className="h-4 w-4 mr-2 shrink-0" />
+            <div className="flex items-start text-sm font-medium text-destructive bg-destructive/10 p-3 rounded-md">
+              <AlertCircle className="h-4 w-4 mr-2 shrink-0 mt-0.5" />
               <span>{form.formState.errors.root.serverError.message}</span>
             </div>
           )}

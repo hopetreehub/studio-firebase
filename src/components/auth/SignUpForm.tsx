@@ -86,7 +86,7 @@ export function SignUpForm() {
           toastOptions.title = '이미 가입된 이메일';
           toastOptions.description = '이 이메일 주소는 이미 사용 중입니다. 로그인하시겠습니까?';
           toastOptions.action = (
-             <ToastAction altText="로그인 페이지로 이동" onClick={() => router.push(`/sign-in?email=${values.email}`)}>
+             <ToastAction altText="로그인 페이지로 이동" onClick={() => router.push(`/sign-in?redirect=${searchParams.get('redirect') || '/'}`)}>
               로그인
             </ToastAction>
           );
