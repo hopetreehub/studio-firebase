@@ -3,18 +3,16 @@
 
 import { z } from 'zod';
 import { firestore } from '@/lib/firebase/admin';
-import { FieldValue, Timestamp } from 'firebase-admin/firestore';
+import { FieldValue } from 'firebase-admin/firestore';
 import type { CommunityPost, CommunityPostCategory } from '@/types';
-import { CommunityPostFormSchema, CommunityPostFormData, ReadingSharePostFormData, ReadingSharePostFormSchema } from '@/types';
+import { FreeDiscussionPostFormSchema, ReadingSharePostFormSchema, type FreeDiscussionPostFormData, type ReadingSharePostFormData } from '@/types';
 
 const POSTS_PER_PAGE = 15;
 
-// Helper to safely map Firestore doc to CommunityPost type
 function mapDocToCommunityPost(doc: FirebaseFirestore.DocumentSnapshot): CommunityPost {
   const data = doc.data();
   const now = new Date();
 
-  // Fallback for documents without data to prevent crashes
   if (!data) {
     return {
         id: doc.id,
@@ -30,15 +28,13 @@ function mapDocToCommunityPost(doc: FirebaseFirestore.DocumentSnapshot): Communi
     };
   }
 
-  // Robustly handle createdAt timestamp
   const createdAt = (data.createdAt && typeof data.createdAt.toDate === 'function')
     ? data.createdAt.toDate()
     : now;
 
-  // Robustly handle updatedAt timestamp
   const updatedAt = (data.updatedAt && typeof data.updatedAt.toDate === 'function')
     ? data.updatedAt.toDate()
-    : createdAt; // Fallback to createdAt if updatedAt is invalid
+    : createdAt;
 
   return {
     id: doc.id,
@@ -57,16 +53,14 @@ function mapDocToCommunityPost(doc: FirebaseFirestore.DocumentSnapshot): Communi
   };
 }
 
-// Get community posts with pagination
 export async function getCommunityPosts(
-  category: 'free-discussion' | 'reading-share',
+  category: CommunityPostCategory,
   page: number = 1
-): Promise<{ posts: CommunityPost[]; totalPosts: number; totalPages: number }> {
+): Promise<{ posts: CommunityPost[]; totalPages: number }> {
   try {
     const postsRef = firestore.collection('communityPosts');
     const queryByCategory = postsRef.where('category', '==', category);
 
-    // Fetch total count and posts for the current page concurrently
     const countPromise = queryByCategory.count().get();
     
     let postsQuery = queryByCategory.orderBy('createdAt', 'desc');
@@ -84,42 +78,34 @@ export async function getCommunityPosts(
     }
     const postsPromise = postsQuery.limit(POSTS_PER_PAGE).get();
 
-    // Await both promises
     const [countSnapshot, postsSnapshot] = await Promise.all([countPromise, postsPromise]);
 
     const totalPosts = countSnapshot.data().count;
-    const totalPages = Math.ceil(totalPosts / POSTS_PER_PAGE);
+    const totalPages = Math.ceil(totalPosts / POSTS_PER_PAGE) || 1;
 
     if (postsSnapshot.empty) {
-      return { posts: [], totalPosts, totalPages };
+      return { posts: [], totalPages };
     }
     
     const posts = postsSnapshot.docs.map(mapDocToCommunityPost);
 
-    return { posts, totalPosts, totalPages };
+    return { posts, totalPages };
 
   } catch (error) {
     console.error(`CRITICAL: Error fetching posts for category '${category}' from Firestore:`, error);
-    // On failure, return an empty array to prevent the page from crashing.
-    // This is a safe fallback for intermittent connection issues.
-    return { posts: [], totalPosts: 0, totalPages: 1 };
+    return { posts: [], totalPages: 1 };
   }
 }
 
-// Get a single community post by ID
 export async function getCommunityPostById(postId: string): Promise<CommunityPost | null> {
   try {
     const docRef = firestore.collection('communityPosts').doc(postId);
-    
     const doc = await docRef.get();
 
     if (!doc.exists) {
-      console.log(`Post with ID ${postId} not found in Firestore.`);
       return null;
     }
     
-    // Increment view count without affecting the data returned to this request.
-    // This is a "fire-and-forget" operation for performance.
     docRef.update({ viewCount: FieldValue.increment(1) }).catch(err => {
         console.error(`Failed to increment view count for post ${postId}:`, err);
     });
@@ -127,18 +113,16 @@ export async function getCommunityPostById(postId: string): Promise<CommunityPos
     return mapDocToCommunityPost(doc);
   } catch (error) {
      console.error(`CRITICAL: Error fetching post with ID ${postId}:`, error);
-     return null; // Return null on failure to prevent crash
+     return null;
   }
 }
 
-
-// Create a new free-discussion post
-export async function createCommunityPost(
-  formData: CommunityPostFormData,
+export async function createFreeDiscussionPost(
+  formData: FreeDiscussionPostFormData,
   author: { uid: string; displayName?: string | null; photoURL?: string | null }
 ): Promise<{ success: boolean; postId?: string; error?: string | object }> {
   try {
-    const validationResult = CommunityPostFormSchema.safeParse(formData);
+    const validationResult = FreeDiscussionPostFormSchema.safeParse(formData);
     if (!validationResult.success) {
       return { success: false, error: validationResult.error.flatten().fieldErrors };
     }
@@ -162,15 +146,13 @@ export async function createCommunityPost(
     };
 
     const docRef = await firestore.collection('communityPosts').add(newPostData);
-    console.log(`Created new community post with ID: ${docRef.id} in category 'free-discussion'`);
     return { success: true, postId: docRef.id };
   } catch (error) {
-    console.error('Error creating community post:', error);
+    console.error('Error creating free discussion post:', error);
     return { success: false, error: error instanceof Error ? error.message : '게시물 생성 중 알 수 없는 오류가 발생했습니다.' };
   }
 }
 
-// Create a new reading-share post
 export async function createReadingSharePost(
   formData: ReadingSharePostFormData,
   author: { uid: string; displayName?: string | null; photoURL?: string | null }
@@ -202,7 +184,6 @@ export async function createReadingSharePost(
     };
 
     const docRef = await firestore.collection('communityPosts').add(newPostData);
-    console.log(`Created new reading-share post with ID: ${docRef.id}`);
     return { success: true, postId: docRef.id };
   } catch (error) {
     console.error('Error creating reading share post:', error);
@@ -210,7 +191,6 @@ export async function createReadingSharePost(
   }
 }
 
-// Delete a community post and its comments
 export async function deleteCommunityPost(
   postId: string,
   userId: string
@@ -224,12 +204,10 @@ export async function deleteCommunityPost(
     }
 
     const postData = doc.data();
-    // In a real app, you might also allow admins to delete posts
     if (postData?.authorId !== userId) {
       return { success: false, error: '이 게시물을 삭제할 권한이 없습니다.' };
     }
 
-    // Delete comments in a batch
     const commentsRef = postRef.collection('comments');
     const commentsSnapshot = await commentsRef.get();
     
@@ -239,12 +217,9 @@ export async function deleteCommunityPost(
       batch.delete(commentDoc.ref);
     });
 
-    // Delete the post itself
     batch.delete(postRef);
 
     await batch.commit();
-    
-    console.log(`Successfully deleted community post ${postId} and its ${commentsSnapshot.size} comments.`);
     return { success: true };
   } catch (error) {
     console.error(`Error deleting post ${postId}:`, error);

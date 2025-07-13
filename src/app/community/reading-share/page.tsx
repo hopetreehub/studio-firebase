@@ -21,7 +21,6 @@ export const metadata: Metadata = {
   description: '자신의 타로 리딩을 공유하고 다른 사람들과 해석에 대해 토론해보세요.',
 };
 
-// Revalidate this page every 10 minutes
 export const revalidate = 600;
 
 interface ReadingSharePageProps {
@@ -50,7 +49,7 @@ export default async function ReadingSharePage({ searchParams }: ReadingSharePag
           </p>
         </div>
         <Button asChild className="shrink-0">
-          <Link href="/community/new?category=reading-share">
+          <Link href="/community/reading-share/new">
             <FilePlus className="mr-2 h-4 w-4" />
             새 리딩 공유하기
           </Link>

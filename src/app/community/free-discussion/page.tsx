@@ -21,7 +21,6 @@ export const metadata: Metadata = {
   description: 'InnerSpell 커뮤니티에서 타로와 영성에 대한 이야기를 자유롭게 나누세요.',
 };
 
-// Revalidate this page every 10 minutes
 export const revalidate = 600;
 
 interface FreeDiscussionPageProps {
@@ -50,7 +49,7 @@ export default async function FreeDiscussionPage({ searchParams }: FreeDiscussio
           </p>
         </div>
         <Button asChild className="shrink-0">
-          <Link href="/community/new?category=free-discussion">
+          <Link href="/community/free-discussion/new">
             <FilePlus className="mr-2 h-4 w-4" />
             새 글 작성하기
           </Link>

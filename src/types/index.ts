@@ -22,7 +22,7 @@ export type TarotCard = {
   element?: string;
   isReversed?: boolean; 
   isFaceUp?: boolean; 
-  position?: string; // For cards within a spread
+  position?: string;
 };
 
 export type TarotInterpretationMethod =
@@ -90,17 +90,13 @@ export const tarotSpreads: SpreadConfiguration[] = [
   { id: 'celtic-cross-wisdom', name: '켈틱 크로스 지혜 (Celtic Cross Wisdom)', description: '가장 전통적이고 심층적인 열 장의 카드 스프레드입니다.', numCards: 10, positions: ['현재 상황', '도전 과제', '과거 기반', '가까운 미래', '목표/의식', '무의식적 영향', '조언', '외부 영향', '희망과 두려움', '최종 결과'] },
 ];
 
-// --- Reading Save/Load Types ---
-
-// Schema for the simplified card data stored in Firestore.
 export const SavedReadingCardSchema = z.object({
   id: z.string(),
   isReversed: z.boolean(),
-  position: z.string().optional(), // Make position optional to handle cases where it might be missing
+  position: z.string().optional(),
 });
 export type SavedReadingCardFirestore = z.infer<typeof SavedReadingCardSchema>;
 
-// Schema for the data sent to the saveUserReading action.
 export const SaveReadingInputSchema = z.object({
   userId: z.string().min(1, { message: '사용자 ID가 필요합니다.' }),
   question: z.string().min(1, { message: '질문 내용이 필요합니다.' }),
@@ -111,18 +107,16 @@ export const SaveReadingInputSchema = z.object({
 });
 export type SaveReadingInput = z.infer<typeof SaveReadingInputSchema>;
 
-// Type for the rich card data used on the client (e.g., in profile page).
 export type SavedReadingCard = {
-  id: string; // TarotCard id
+  id: string;
   name: string;
   imageSrc: string;
   isReversed: boolean;
-  position?: string; // Position in the spread
+  position?: string;
 };
 
-// Type for a full reading record retrieved from the server.
 export type SavedReading = {
-  id: string; // Firestore document ID
+  id: string;
   userId: string;
   question: string;
   spreadName: string;
@@ -132,8 +126,6 @@ export type SavedReading = {
   createdAt: Date;
 };
 
-
-// --- Community Types ---
 export type CommunityPostCategory = 'free-discussion' | 'reading-share';
 
 export type CommunityPost = {
@@ -146,20 +138,18 @@ export type CommunityPost = {
   viewCount: number;
   commentCount: number;
   category: CommunityPostCategory;
-  readingQuestion?: string; // Optional: for reading-share posts
-  cardsInfo?: string;     // Optional: for reading-share posts
+  readingQuestion?: string;
+  cardsInfo?: string;
   createdAt: Date;
   updatedAt: Date;
 };
 
-// Schema for Free Discussion Form
-export const CommunityPostFormSchema = z.object({
+export const FreeDiscussionPostFormSchema = z.object({
   title: z.string().min(5, "제목은 5자 이상이어야 합니다.").max(150, "제목은 150자를 넘을 수 없습니다."),
   content: z.string().min(10, "내용은 10자 이상이어야 합니다."),
 });
-export type CommunityPostFormData = z.infer<typeof CommunityPostFormSchema>;
+export type FreeDiscussionPostFormData = z.infer<typeof FreeDiscussionPostFormSchema>;
 
-// Schema for Reading Share Form
 export const ReadingSharePostFormSchema = z.object({
   title: z.string().min(5, "제목은 5자 이상이어야 합니다.").max(150, "제목은 150자를 넘을 수 없습니다."),
   readingQuestion: z.string().min(5, "리딩 질문은 5자 이상이어야 합니다."),
@@ -168,32 +158,12 @@ export const ReadingSharePostFormSchema = z.object({
 });
 export type ReadingSharePostFormData = z.infer<typeof ReadingSharePostFormSchema>;
 
-
-// --- API Specific Schemas ---
-
-const ApiAuthorSchema = z.object({
-  authorName: z.string().optional(),
-  authorPhotoURL: z.string().url().optional(),
-});
-
-// Schema for API posts in free-discussion
-const ApiCommunityPostPayloadSchema = CommunityPostFormSchema.extend({
-    category: z.literal('free-discussion'),
-}).merge(ApiAuthorSchema);
-
-// Schema for API posts in reading-share
-const ApiReadingSharePostPayloadSchema = ReadingSharePostFormSchema.extend({
-    category: z.literal('reading-share'),
-}).merge(ApiAuthorSchema);
-
-// Combined discriminated union schema for validating any community post from the API
 export const ApiCommunityCombinedPayloadSchema = z.discriminatedUnion("category", [
-    ApiCommunityPostPayloadSchema,
-    ApiReadingSharePostPayloadSchema
+  FreeDiscussionPostFormSchema.extend({ category: z.literal('free-discussion') }),
+  ReadingSharePostFormSchema.extend({ category: z.literal('reading-share') })
 ]);
 export type ApiCommunityCombinedPayload = z.infer<typeof ApiCommunityCombinedPayloadSchema>;
 
-// Blog Post (for deprecated API endpoint)
 export const BlogFormDataSchema = z.object({
   title: z.string().min(1, "제목은 필수입니다."),
   content: z.string().min(1, "내용은 필수입니다."),
@@ -202,8 +172,6 @@ export const BlogFormDataSchema = z.object({
 });
 export type BlogFormData = z.infer<typeof BlogFormDataSchema>;
 
-
-// User Profile Update
 export const UserProfileFormSchema = z.object({
   displayName: z.string().min(2, { message: '닉네임은 최소 2자 이상이어야 합니다.' }).max(50, { message: '닉네임은 최대 50자까지 가능합니다.' }),
   birthDate: z.string().optional(),
@@ -211,7 +179,6 @@ export const UserProfileFormSchema = z.object({
 });
 export type UserProfileFormData = z.infer<typeof UserProfileFormSchema>;
 
-// Community Comment Types
 export const CommunityCommentFormSchema = z.object({
   content: z.string().min(1, "댓글 내용은 비워둘 수 없습니다.").max(2000, "댓글은 2000자를 넘을 수 없습니다."),
 });
