@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { firestore } from '@/lib/firebase/admin';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import type { CommunityPost, CommunityPostCategory } from '@/types';
-import { FreeDiscussionPostFormSchema, type FreeDiscussionPostFormData } from '@/types';
+import { FreeDiscussionPostFormSchema, type FreeDiscussionPostFormData, type ReadingSharePostFormData, ReadingSharePostFormSchema } from '@/types';
 
 const POSTS_PER_PAGE = 15;
 
@@ -41,7 +41,7 @@ export async function getCommunityPosts(
     const postsRef = firestore.collection('communityPosts');
     const queryByCategory = postsRef.where('category', '==', category);
     
-    // Get total count for pagination
+    // Get total count for pagination. Use a separate query for this.
     const countPromise = queryByCategory.count().get();
     
     // Construct the query for the posts
@@ -83,9 +83,8 @@ export async function getCommunityPostById(postId: string): Promise<CommunityPos
       return null;
     }
     
-    // Atomically increment view count
+    // Atomically increment view count, but don't let it block the response
     docRef.update({ viewCount: FieldValue.increment(1) }).catch(err => {
-      // Log error but don't block returning the post
       console.error(`Failed to increment view count for post ${postId}:`, err);
     });
 
