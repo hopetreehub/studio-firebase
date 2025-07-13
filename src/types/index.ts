@@ -126,10 +126,8 @@ export type SavedReading = {
   createdAt: Date;
 };
 
-// DEPRECATED - Community features are removed for now.
-export type CommunityPostCategory = 'free-discussion' | 'reading-share';
+export type CommunityPostCategory = 'free-discussion';
 
-// DEPRECATED - Community features are removed for now.
 export type CommunityPost = {
   id: string;
   authorId: string;
@@ -137,35 +135,37 @@ export type CommunityPost = {
   authorPhotoURL?: string;
   title: string;
   content: string;
+  imageUrl: string | null;
   viewCount: number;
   commentCount: number;
   category: CommunityPostCategory;
-  readingQuestion?: string;
-  cardsInfo?: string;
   createdAt: Date;
   updatedAt: Date;
 };
 
-// DEPRECATED - Community features are removed for now.
 export const FreeDiscussionPostFormSchema = z.object({
-  title: z.string(),
-  content: z.string(),
+  title: z.string().min(1, '제목을 입력해주세요.').max(100, '제목은 100자를 초과할 수 없습니다.'),
+  content: z.string().min(1, '내용을 입력해주세요.'),
+  imageUrl: z.string().url('유효한 이미지 URL을 입력해주세요.').optional().or(z.literal('')),
 });
 export type FreeDiscussionPostFormData = z.infer<typeof FreeDiscussionPostFormSchema>;
 
-// DEPRECATED - Community features are removed for now.
-export const ReadingSharePostFormSchema = z.object({
-  title: z.string(),
-  readingQuestion: z.string(),
-  cardsInfo: z.string(),
-  content: z.string(),
+export const CommunityCommentFormSchema = z.object({
+  content: z.string().min(1, "댓글 내용을 입력해주세요.").max(2000, "댓글은 2000자를 초과할 수 없습니다."),
 });
-export type ReadingSharePostFormData = z.infer<typeof ReadingSharePostFormSchema>;
+export type CommunityCommentFormData = z.infer<typeof CommunityCommentFormSchema>;
 
+export type CommunityComment = {
+  id: string;
+  postId: string;
+  authorId: string;
+  authorName: string;
+  authorPhotoURL?: string;
+  content: string;
+  createdAt: Date;
+  updatedAt: Date;
+};
 
-// DEPRECATED - Community features are removed for now.
-export const ApiCommunityCombinedPayloadSchema = z.object({});
-export type ApiCommunityCombinedPayload = z.infer<typeof ApiCommunityCombinedPayloadSchema>;
 
 export const BlogFormDataSchema = z.object({
   title: z.string().min(1, "제목은 필수입니다."),
@@ -181,21 +181,3 @@ export const UserProfileFormSchema = z.object({
   sajuInfo: z.string().optional(),
 });
 export type UserProfileFormData = z.infer<typeof UserProfileFormSchema>;
-
-// DEPRECATED - Community features are removed for now.
-export const CommunityCommentFormSchema = z.object({
-  content: z.string(),
-});
-export type CommunityCommentFormData = z.infer<typeof CommunityCommentFormSchema>;
-
-// DEPRECATED - Community features are removed for now.
-export type CommunityComment = {
-  id: string;
-  postId: string;
-  authorId: string;
-  authorName: string;
-  authorPhotoURL?: string;
-  content: string;
-  createdAt: Date;
-  updatedAt: Date;
-};

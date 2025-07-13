@@ -1,7 +1,7 @@
 
 import { redirect } from 'next/navigation';
 
-export default function DeprecatedPage() {
-  // This feature is deprecated. Redirect to the main encyclopedia page.
-  redirect('/encyclopedia');
+// This feature is not implemented yet. Redirect to the main community page.
+export default function ReadingSharePage() {
+  redirect('/community');
 }

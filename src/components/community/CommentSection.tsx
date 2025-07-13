@@ -17,7 +17,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Spinner } from '@/components/ui/spinner';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form';
-import { MessageCircle, Loader2, Send, Trash2, Edit, AlertTriangle } from 'lucide-react';
+import { MessageCircle, Loader2, Send, Trash2, Edit, AlertTriangle, UserCircle } from 'lucide-react';
 import Link from 'next/link';
 
 import {
@@ -167,7 +167,7 @@ export function CommentSection({ postId, initialCommentCount }: CommentSectionPr
               <div key={comment.id} className="flex items-start space-x-4">
                 <Avatar className="h-10 w-10">
                   <AvatarImage src={comment.authorPhotoURL} alt={comment.authorName} />
-                  <AvatarFallback>{comment.authorName.charAt(0)}</AvatarFallback>
+                  <AvatarFallback><UserCircle className="h-5 w-5"/></AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
                   <div className="flex items-center justify-between">

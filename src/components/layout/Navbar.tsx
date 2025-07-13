@@ -8,7 +8,7 @@ import { ThemeToggle } from './ThemeToggle';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { Menu, BookOpenText } from 'lucide-react';
+import { Menu, BookOpenText, MessageSquare } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -17,7 +17,7 @@ const baseNavItems = [
   { href: '/reading', label: '타로리딩' },
   { href: '/dream-interpretation', label: '꿈해몽' },
   { href: 'https://blog.innerspell.com', label: '블로그' },
-  { href: '/encyclopedia', label: '백과사전', icon: <BookOpenText className="mr-2 h-4 w-4" /> },
+  { href: '/community', label: '커뮤니티', icon: <MessageSquare className="mr-2 h-4 w-4" /> },
 ];
 
 export function Navbar() {
