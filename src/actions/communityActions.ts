@@ -140,7 +140,8 @@ export async function getCommunityPostById(postId: string): Promise<CommunityPos
 // Create a new free-discussion post
 export async function createCommunityPost(
   formData: CommunityPostFormData,
-  author: { uid: string; displayName?: string | null; photoURL?: string | null }
+  author: { uid: string; displayName?: string | null; photoURL?: string | null },
+  category: CommunityPostCategory
 ): Promise<{ success: boolean; postId?: string; error?: string | object }> {
   try {
     const validationResult = CommunityPostFormSchema.safeParse(formData);
@@ -159,7 +160,7 @@ export async function createCommunityPost(
       authorPhotoURL: author.photoURL || '',
       title,
       content,
-      category: 'free-discussion' as CommunityPostCategory,
+      category: category,
       viewCount: 0,
       commentCount: 0,
       createdAt: FieldValue.serverTimestamp(),
@@ -167,7 +168,7 @@ export async function createCommunityPost(
     };
 
     const docRef = await firestore.collection('communityPosts').add(newPostData);
-    console.log(`Created new community post with ID: ${docRef.id} in category 'free-discussion'`);
+    console.log(`Created new community post with ID: ${docRef.id} in category '${category}'`);
     return { success: true, postId: docRef.id };
   } catch (error) {
     console.error('Error creating community post:', error);
