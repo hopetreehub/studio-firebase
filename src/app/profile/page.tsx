@@ -8,16 +8,10 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
-import { UserCircle, Edit3, KeyRound, ShieldCheck, Eye, EyeOff, BookHeart, Trash2, AlertTriangle, Search, Calendar, Sparkles, Star } from 'lucide-react';
+import { UserCircle, Edit3, ShieldCheck, BookHeart, Trash2, AlertTriangle, Search, Calendar, Sparkles, Star } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Spinner } from '@/components/ui/spinner';
-import { 
-  reauthenticateWithCredential,
-  EmailAuthProvider,
-  updatePassword as firebaseUpdatePassword,
-} from 'firebase/auth';
-import { auth as firebaseAuth } from '@/lib/firebase/client';
 import { useToast } from '@/hooks/use-toast';
 import type { SavedReading, SavedReadingCard } from '@/types';
 import { getUserReadings, deleteUserReading } from '@/actions/readingActions';
@@ -37,6 +31,8 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { ko } from 'date-fns/locale';
+import { PasswordChangeForm } from '@/components/profile/PasswordChangeForm';
+
 
 const IMAGE_ORIGINAL_WIDTH_SMALL = 100; // For profile page display
 const IMAGE_ORIGINAL_HEIGHT_SMALL = 173; // Aspect ratio: 275/475 * 100
@@ -52,15 +48,6 @@ export default function ProfilePage() {
   const [sajuInfo, setSajuInfo] = useState('');
   const [isEditing, setIsEditing] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
-
-  const [showPasswordChangeForm, setShowPasswordChangeForm] = useState(false);
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmNewPassword, setConfirmNewPassword] = useState('');
-  const [isChangingPassword, setIsChangingPassword] = useState(false);
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [savedReadings, setSavedReadings] = useState<SavedReading[]>([]);
   const [loadingReadings, setLoadingReadings] = useState(true);
@@ -133,46 +120,6 @@ export default function ProfilePage() {
     }
   };
 
-  const handleChangePassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!firebaseUser || !firebaseUser.email) {
-      toast({ variant: 'destructive', title: '오류', description: '사용자 정보를 찾을 수 없습니다.' });
-      return;
-    }
-    if (newPassword !== confirmNewPassword) {
-      toast({ variant: 'destructive', title: '오류', description: '새 비밀번호가 일치하지 않습니다.' });
-      return;
-    }
-    if (newPassword.length < 6) {
-      toast({ variant: 'destructive', title: '오류', description: '새 비밀번호는 6자 이상이어야 합니다.' });
-      return;
-    }
-
-    setIsChangingPassword(true);
-    try {
-      const credential = EmailAuthProvider.credential(firebaseUser.email, currentPassword);
-      await reauthenticateWithCredential(firebaseUser, credential);
-      await firebaseUpdatePassword(firebaseUser, newPassword);
-      toast({ title: '성공', description: '비밀번호가 성공적으로 변경되었습니다.' });
-      setShowPasswordChangeForm(false);
-      setCurrentPassword('');
-      setNewPassword('');
-      setConfirmNewPassword('');
-    } catch (error: any) {
-      let errorMessage = '비밀번호 변경 중 오류가 발생했습니다.';
-      if (error.code === 'auth/wrong-password') {
-        errorMessage = '현재 비밀번호가 올바르지 않습니다.';
-      } else if (error.code === 'auth/too-many-requests') {
-        errorMessage = '너무 많은 로그인 시도를 하셨습니다. 잠시 후 다시 시도해주세요.';
-      } else if (error.code === 'auth/weak-password') {
-        errorMessage = '새 비밀번호가 너무 약합니다. 더 강력한 비밀번호를 사용해주세요.';
-      }
-      toast({ variant: 'destructive', title: '비밀번호 변경 오류', description: errorMessage });
-    } finally {
-      setIsChangingPassword(false);
-    }
-  };
-
   const handleDeleteReadingConfirm = async () => {
     if (!readingToDelete || !user) return;
     setIsDeletingReading(true);
@@ -209,7 +156,7 @@ export default function ProfilePage() {
         <CardHeader>
           <div className="flex justify-between items-center">
             <CardTitle className="font-headline text-2xl text-primary">계정 정보</CardTitle>
-            {!isEditing && !showPasswordChangeForm && (
+            {!isEditing && (
               <Button variant="ghost" size="icon" onClick={() => setIsEditing(true)} aria-label="프로필 수정">
                 <Edit3 className="h-5 w-5" />
               </Button>
@@ -310,103 +257,8 @@ export default function ProfilePage() {
       </Card>
 
       {/* 비밀번호 변경 카드 */}
-      <Card className="shadow-xl border-primary/10">
-        <CardHeader>
-          <CardTitle className="font-headline text-2xl text-primary flex items-center">
-            <ShieldCheck className="mr-2 h-6 w-6 text-accent"/>비밀번호 변경
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {!showPasswordChangeForm ? (
-            <Button onClick={() => setShowPasswordChangeForm(true)} disabled={isEditing || !firebaseAuth}>
-              비밀번호 변경하기
-            </Button>
-          ) : (
-            <form onSubmit={handleChangePassword} className="space-y-4">
-              <div>
-                <Label htmlFor="currentPassword">현재 비밀번호</Label>
-                <div className="relative">
-                  <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                  <Input 
-                    id="currentPassword" 
-                    type={showCurrentPassword ? 'text' : 'password'} 
-                    value={currentPassword} 
-                    onChange={(e) => setCurrentPassword(e.target.value)} 
-                    required 
-                    className="pl-10"
-                  />
-                  <Button
-                    type="button" variant="ghost" size="icon"
-                    className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
-                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                    aria-label={showCurrentPassword ? "현재 비밀번호 숨기기" : "현재 비밀번호 보기"}
-                  >
-                    {showCurrentPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                  </Button>
-                </div>
-              </div>
-              <div>
-                <Label htmlFor="newPassword">새 비밀번호 (6자 이상)</Label>
-                 <div className="relative">
-                  <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                  <Input 
-                    id="newPassword" 
-                    type={showNewPassword ? 'text' : 'password'} 
-                    value={newPassword} 
-                    onChange={(e) => setNewPassword(e.target.value)} 
-                    required 
-                    className="pl-10"
-                  />
-                  <Button
-                    type="button" variant="ghost" size="icon"
-                    className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
-                    onClick={() => setShowNewPassword(!showNewPassword)}
-                    aria-label={showNewPassword ? "새 비밀번호 숨기기" : "새 비밀번호 보기"}
-                  >
-                    {showNewPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                  </Button>
-                </div>
-              </div>
-              <div>
-                <Label htmlFor="confirmNewPassword">새 비밀번호 확인</Label>
-                 <div className="relative">
-                  <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                  <Input 
-                    id="confirmNewPassword" 
-                    type={showConfirmPassword ? 'text' : 'password'} 
-                    value={confirmNewPassword} 
-                    onChange={(e) => setConfirmNewPassword(e.target.value)} 
-                    required 
-                    className="pl-10"
-                  />
-                  <Button
-                    type="button" variant="ghost" size="icon"
-                    className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    aria-label={showConfirmPassword ? "새 비밀번호 확인 숨기기" : "새 비밀번호 확인 보기"}
-                  >
-                    {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                  </Button>
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <Button type="submit" disabled={isChangingPassword}>
-                  {isChangingPassword && <Spinner size="small" className="mr-2" />}
-                  {isChangingPassword ? '저장 중...' : '비밀번호 저장'}
-                </Button>
-                <Button type="button" variant="outline" onClick={() => {
-                  setShowPasswordChangeForm(false);
-                  setCurrentPassword('');
-                  setNewPassword('');
-                  setConfirmNewPassword('');
-                }}>
-                  취소
-                </Button>
-              </div>
-            </form>
-          )}
-        </CardContent>
-      </Card>
+      <PasswordChangeForm />
+      
 
       {/* 나의 타로 리딩 기록 */}
       <Card className="shadow-xl border-primary/10">
