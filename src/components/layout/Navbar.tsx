@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -7,7 +8,7 @@ import { ThemeToggle } from './ThemeToggle';
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { Menu } from 'lucide-react';
+import { Menu, BookOpenText } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -16,7 +17,7 @@ const baseNavItems = [
   { href: '/reading', label: '타로리딩' },
   { href: '/dream-interpretation', label: '꿈해몽' },
   { href: 'https://blog.innerspell.com', label: '블로그' },
-  { href: '/community', label: '커뮤니티' },
+  { href: '/encyclopedia', label: '백과사전', icon: <BookOpenText className="mr-2 h-4 w-4" /> },
 ];
 
 export function Navbar() {
@@ -50,10 +51,11 @@ export function Navbar() {
                 <Link
                   key={item.label}
                   href={item.href}
-                  className="transition-colors hover:text-primary text-foreground/80"
+                  className="transition-colors hover:text-primary text-foreground/80 flex items-center"
                   target={isExternal ? '_blank' : undefined}
                   rel={isExternal ? 'noopener noreferrer' : undefined}
                 >
+                  {item.icon}
                   {item.label}
                 </Link>
               );
@@ -98,11 +100,12 @@ export function Navbar() {
                         <Link
                           key={item.label}
                           href={item.href}
-                          className="block rounded-md px-3 py-2 text-base font-medium text-foreground/80 hover:bg-accent hover:text-accent-foreground transition-colors"
+                          className="flex items-center rounded-md px-3 py-2 text-base font-medium text-foreground/80 hover:bg-accent hover:text-accent-foreground transition-colors"
                           onClick={() => setMobileMenuOpen(false)}
                           target={isExternal ? '_blank' : undefined}
                           rel={isExternal ? 'noopener noreferrer' : undefined}
                         >
+                          {item.icon}
                           {item.label}
                         </Link>
                      );

@@ -1,3 +1,4 @@
+
 'use client';
 
 import Image from 'next/image';
@@ -10,7 +11,7 @@ const navItems = [
   { href: '/reading', label: 'Tarot Reading' },
   { href: '/dream-interpretation', label: 'Dream Interpretation' },
   { href: 'https://blog.innerspell.com', label: 'Blog' },
-  { href: '/community', label: 'Community' },
+  { href: '/encyclopedia', label: 'Encyclopedia' },
 ];
 
 const policyItems = [

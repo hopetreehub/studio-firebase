@@ -126,8 +126,10 @@ export type SavedReading = {
   createdAt: Date;
 };
 
+// DEPRECATED - Community features are removed for now.
 export type CommunityPostCategory = 'free-discussion' | 'reading-share';
 
+// DEPRECATED - Community features are removed for now.
 export type CommunityPost = {
   id: string;
   authorId: string;
@@ -144,24 +146,25 @@ export type CommunityPost = {
   updatedAt: Date;
 };
 
+// DEPRECATED - Community features are removed for now.
 export const FreeDiscussionPostFormSchema = z.object({
-  title: z.string().min(5, "제목은 5자 이상이어야 합니다.").max(150, "제목은 150자를 넘을 수 없습니다."),
-  content: z.string().min(10, "내용은 10자 이상이어야 합니다."),
+  title: z.string(),
+  content: z.string(),
 });
 export type FreeDiscussionPostFormData = z.infer<typeof FreeDiscussionPostFormSchema>;
 
+// DEPRECATED - Community features are removed for now.
 export const ReadingSharePostFormSchema = z.object({
-  title: z.string().min(5, "제목은 5자 이상이어야 합니다.").max(150, "제목은 150자를 넘을 수 없습니다."),
-  readingQuestion: z.string().min(5, "리딩 질문은 5자 이상이어야 합니다."),
-  cardsInfo: z.string().min(5, "뽑은 카드 정보는 5자 이상이어야 합니다."),
-  content: z.string().min(10, "해석이나 질문 내용은 10자 이상이어야 합니다."),
+  title: z.string(),
+  readingQuestion: z.string(),
+  cardsInfo: z.string(),
+  content: z.string(),
 });
 export type ReadingSharePostFormData = z.infer<typeof ReadingSharePostFormSchema>;
 
-export const ApiCommunityCombinedPayloadSchema = z.discriminatedUnion("category", [
-  FreeDiscussionPostFormSchema.extend({ category: z.literal('free-discussion') }),
-  ReadingSharePostFormSchema.extend({ category: z.literal('reading-share') })
-]);
+
+// DEPRECATED - Community features are removed for now.
+export const ApiCommunityCombinedPayloadSchema = z.object({});
 export type ApiCommunityCombinedPayload = z.infer<typeof ApiCommunityCombinedPayloadSchema>;
 
 export const BlogFormDataSchema = z.object({
@@ -179,11 +182,13 @@ export const UserProfileFormSchema = z.object({
 });
 export type UserProfileFormData = z.infer<typeof UserProfileFormSchema>;
 
+// DEPRECATED - Community features are removed for now.
 export const CommunityCommentFormSchema = z.object({
-  content: z.string().min(1, "댓글 내용은 비워둘 수 없습니다.").max(2000, "댓글은 2000자를 넘을 수 없습니다."),
+  content: z.string(),
 });
 export type CommunityCommentFormData = z.infer<typeof CommunityCommentFormSchema>;
 
+// DEPRECATED - Community features are removed for now.
 export type CommunityComment = {
   id: string;
   postId: string;
