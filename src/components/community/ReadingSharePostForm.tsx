@@ -81,7 +81,7 @@ export function ReadingSharePostForm() {
         </CardHeader>
         <CardContent className="text-center">
             <Button asChild>
-                <Link href="/sign-in?redirect=/community/reading-share/new">로그인 페이지로 이동</Link>
+                <Link href="/sign-in?redirect=/community/new?category=reading-share">로그인 페이지로 이동</Link>
             </Button>
         </CardContent>
       </Card>
