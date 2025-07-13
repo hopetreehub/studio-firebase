@@ -13,6 +13,7 @@ import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import { getTarotPromptConfig } from '@/ai/services/prompt-service';
 
+
 const GenerateTarotInterpretationInputSchema = z.object({
   question: z.string().describe('The user provided question for the tarot reading, potentially including an interpretation style cue like "(해석 스타일: 스타일 이름)".'),
   cardSpread: z.string().describe('The selected tarot card spread (e.g., 1-card, 3-card, custom). Also includes card position names if defined for the spread.'),
@@ -38,6 +39,7 @@ const generateTarotInterpretationFlow = ai.defineFlow(
     outputSchema: GenerateTarotInterpretationOutputSchema,
   },
   async (flowInput: GenerateTarotInterpretationInput) => {
+    
     try {
       // Fetch dynamic configuration from the centralized service
       const { promptTemplate, safetySettings, model } = await getTarotPromptConfig();
@@ -69,7 +71,7 @@ const generateTarotInterpretationFlow = ai.defineFlow(
       const errorMessage = e.toString();
 
       if (errorMessage.includes('429')) {
-        userMessage = 'Gemini API 사용량 한도를 초과했습니다. 잠시 후 다시 시도하거나, 관리자에게 문의하여 API 키를 확인해주세요. (오류 코드: 429)';
+        userMessage = 'API 사용량 한도를 초과했습니다. 잠시 후 다시 시도하거나, 관리자에게 문의하여 주세요.';
       } else if (errorMessage.includes('503') || errorMessage.toLowerCase().includes('overloaded')) {
         userMessage = 'AI 모델에 대한 요청이 많아 현재 응답할 수 없습니다. 잠시 후 다시 시도해 주세요.';
       } else if ((e as any).finishReason && (e as any).finishReason !== 'STOP') {
