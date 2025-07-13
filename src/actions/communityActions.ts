@@ -66,22 +66,11 @@ export async function getCommunityPosts(
     const postsRef = firestore.collection('communityPosts');
     let queryByCategory = postsRef.where('category', '==', category);
 
-    // Get total count for pagination. Use a separate query for this.
-    const countSnapshot = await queryByCategory.count().get();
-    const totalPosts = countSnapshot.data().count;
-    const totalPages = Math.ceil(totalPosts / POSTS_PER_PAGE);
-
-    if (totalPosts === 0) {
-      return { posts: [], totalPosts: 0, totalPages: 0 };
-    }
-
-    // Fetch the posts for the current page
-    let query = queryByCategory.orderBy('createdAt', 'desc');
-
+    // Fetch total count and posts for the current page concurrently
+    const countPromise = queryByCategory.count().get();
+    
+    let postsQuery = queryByCategory.orderBy('createdAt', 'desc');
     if (page > 1) {
-      // Re-run the query with a limit to find the document to start after.
-      // This is less efficient than cursor-based pagination with infinite scroll,
-      // but necessary for numbered pagination without passing cursors from the client.
       const startAfterDocSnapshot = await queryByCategory
         .orderBy('createdAt', 'desc')
         .limit((page - 1) * POSTS_PER_PAGE)
@@ -90,23 +79,29 @@ export async function getCommunityPosts(
       const lastVisibleDoc = startAfterDocSnapshot.docs[startAfterDocSnapshot.docs.length - 1];
         
       if(lastVisibleDoc) {
-        query = query.startAfter(lastVisibleDoc);
+        postsQuery = postsQuery.startAfter(lastVisibleDoc);
       }
     }
-    
-    const snapshot = await query.limit(POSTS_PER_PAGE).get();
+    const postsPromise = postsQuery.limit(POSTS_PER_PAGE).get();
 
-    if (snapshot.empty) {
+    // Await both promises
+    const [countSnapshot, postsSnapshot] = await Promise.all([countPromise, postsPromise]);
+
+    const totalPosts = countSnapshot.data().count;
+    const totalPages = Math.ceil(totalPosts / POSTS_PER_PAGE);
+
+    if (postsSnapshot.empty) {
       return { posts: [], totalPosts, totalPages };
     }
     
-    const posts = snapshot.docs.map(mapDocToCommunityPost);
+    const posts = postsSnapshot.docs.map(mapDocToCommunityPost);
 
     return { posts, totalPosts, totalPages };
 
   } catch (error) {
     console.error(`CRITICAL: Error fetching posts for category '${category}' from Firestore:`, error);
     // On failure, return an empty array to prevent the page from crashing.
+    // This is a safe fallback for intermittent connection issues.
     return { posts: [], totalPosts: 0, totalPages: 1 };
   }
 }
@@ -141,7 +136,7 @@ export async function getCommunityPostById(postId: string): Promise<CommunityPos
 export async function createCommunityPost(
   formData: CommunityPostFormData,
   author: { uid: string; displayName?: string | null; photoURL?: string | null },
-  category: CommunityPostCategory
+  category: 'free-discussion'
 ): Promise<{ success: boolean; postId?: string; error?: string | object }> {
   try {
     const validationResult = CommunityPostFormSchema.safeParse(formData);
