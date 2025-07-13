@@ -146,7 +146,7 @@ export type CommunityPost = {
 export const FreeDiscussionPostFormSchema = z.object({
   title: z.string().min(1, '제목을 입력해주세요.').max(100, '제목은 100자를 초과할 수 없습니다.'),
   content: z.string().min(1, '내용을 입력해주세요.'),
-  imageUrl: z.string().url('유효한 이미지 URL을 입력해주세요.').optional().or(z.literal('')),
+  imageUrl: z.string().url('유효한 이미지 URL을 입력해주세요.').optional().or(z.literal('')).or(z.undefined()),
 });
 export type FreeDiscussionPostFormData = z.infer<typeof FreeDiscussionPostFormSchema>;
 
@@ -181,3 +181,21 @@ export const UserProfileFormSchema = z.object({
   sajuInfo: z.string().optional(),
 });
 export type UserProfileFormData = z.infer<typeof UserProfileFormSchema>;
+
+export type ReadingSharePostFormData = z.infer<typeof ReadingSharePostFormSchema>;
+
+// This schema is specifically for sharing a reading to the community
+export const ReadingSharePostFormSchema = z.object({
+  title: z.string().min(1, '제목을 입력해주세요.').max(100, '제목은 100자를 초과할 수 없습니다.'),
+  readingQuestion: z.string().min(1, '리딩 질문을 입력해주세요.'),
+  cardsInfo: z.string().min(1, '카드 정보를 입력해주세요.'),
+  content: z.string().min(1, '내용을 입력해주세요.'),
+  imageUrl: z.string().url('유효한 이미지 URL을 입력해주세요.').optional(),
+});
+
+// This schema is for creating posts via an external API, like from a CMS
+export const ApiCommunityCombinedPayloadSchema = ReadingSharePostFormSchema.extend({
+  category: z.enum(['reading-share', 'free-discussion', 'q-and-a', 'deck-review', 'study-group']),
+  authorName: z.string().optional(),
+  authorPhotoURL: z.string().url().optional(),
+});

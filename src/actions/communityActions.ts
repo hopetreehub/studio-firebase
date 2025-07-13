@@ -113,7 +113,7 @@ export async function createFreeDiscussionPost(
       authorPhotoURL: author.photoURL || '',
       title,
       content,
-      imageUrl: imageUrl || null,
+      ...imageUrl && { imageUrl }, // Conditionally add imageUrl only if it exists
       category: 'free-discussion' as CommunityPostCategory,
       viewCount: 0,
       commentCount: 0,
