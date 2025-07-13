@@ -5,10 +5,9 @@ import Link from 'next/link';
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
 
-import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
 import { Pagination, PaginationContent, PaginationItem, PaginationPrevious, PaginationNext, PaginationLink } from '@/components/ui/pagination';
 import { MessageSquare, MessageCircle, Eye, PlusCircle, UserCircle } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -113,7 +112,7 @@ export default async function FreeDiscussionPage({ searchParams }: FreeDiscussio
         <Pagination>
           <PaginationContent>
             <PaginationItem>
-              <PaginationPrevious href={page > 1 ? `/community/free-discussion?page=${page - 1}` : '#'} aria-disabled={page <= 1}/>
+              <PaginationPrevious href={page > 1 ? `/community/free-discussion?page=${page - 1}` : undefined} aria-disabled={page <= 1}/>
             </PaginationItem>
             {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
               <PaginationItem key={p}>
@@ -123,7 +122,7 @@ export default async function FreeDiscussionPage({ searchParams }: FreeDiscussio
               </PaginationItem>
             ))}
             <PaginationItem>
-              <PaginationNext href={page < totalPages ? `/community/free-discussion?page=${page + 1}` : '#'} aria-disabled={page >= totalPages}/>
+              <PaginationNext href={page < totalPages ? `/community/free-discussion?page=${page + 1}` : undefined} aria-disabled={page >= totalPages}/>
             </PaginationItem>
           </PaginationContent>
         </Pagination>
