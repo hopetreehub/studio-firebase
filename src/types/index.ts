@@ -177,14 +177,14 @@ const ApiAuthorSchema = z.object({
 });
 
 // Schema for API posts in free-discussion
-const ApiCommunityPostPayloadSchema = CommunityPostFormSchema.merge(ApiAuthorSchema).extend({
+const ApiCommunityPostPayloadSchema = CommunityPostFormSchema.extend({
     category: z.literal('free-discussion'),
-});
+}).merge(ApiAuthorSchema);
 
 // Schema for API posts in reading-share
-const ApiReadingSharePostPayloadSchema = ReadingSharePostFormSchema.merge(ApiAuthorSchema).extend({
+const ApiReadingSharePostPayloadSchema = ReadingSharePostFormSchema.extend({
     category: z.literal('reading-share'),
-});
+}).merge(ApiAuthorSchema);
 
 // Combined discriminated union schema for validating any community post from the API
 export const ApiCommunityCombinedPayloadSchema = z.discriminatedUnion("category", [

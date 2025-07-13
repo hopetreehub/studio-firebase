@@ -46,8 +46,7 @@ export function CommunityPostForm() {
     }
     setLoading(true);
     
-    // Pass category to the action
-    const result = await createCommunityPost(values, user, 'free-discussion');
+    const result = await createCommunityPost(values, user);
 
     if (result.success && result.postId) {
       toast({
