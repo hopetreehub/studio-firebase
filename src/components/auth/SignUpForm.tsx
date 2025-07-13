@@ -37,9 +37,6 @@ const formSchema = z.object({
   password: z.string().min(6, { message: '비밀번호는 최소 6자 이상이어야 합니다.' }),
 });
 
-const DISABLE_REDIRECT =
-  process.env.NEXT_PUBLIC_DISABLE_AUTH_REDIRECT === 'true';
-
 export function SignUpForm() {
   const { toast } = useToast();
   const router = useRouter();
@@ -70,10 +67,8 @@ export function SignUpForm() {
       });
       toast({ title: '회원가입 성공', description: '계정이 성공적으로 생성되었습니다. 환영합니다!' });
 
-      if (!DISABLE_REDIRECT) {
-        const redirectUrl = searchParams.get('redirect') || '/';
-        router.push(redirectUrl);
-      }
+      const redirectUrl = searchParams.get('redirect') || '/';
+      router.push(redirectUrl);
     } catch (error: any) {
       console.error("Sign-Up Error:", error);
       let toastOptions: any = {
@@ -125,10 +120,8 @@ export function SignUpForm() {
         description: 'Google 계정으로 성공적으로 가입 및 로그인되었습니다.',
       });
 
-      if (!DISABLE_REDIRECT) {
-        const redirectUrl = searchParams.get('redirect') || '/';
-        router.push(redirectUrl);
-      }
+      const redirectUrl = searchParams.get('redirect') || '/';
+      router.push(redirectUrl);
     } catch (error: any)
        {
       console.error("Google Sign-Up/In Error:", error);

@@ -31,9 +31,6 @@ const passwordlessSchema = z.object({
   email: z.string().email({ message: '유효한 이메일 주소를 입력해주세요.' }),
 });
 
-const DISABLE_REDIRECT =
-  process.env.NEXT_PUBLIC_DISABLE_AUTH_REDIRECT === 'true';
-
 export function SignInForm() {
   const { toast } = useToast();
   const router = useRouter();
@@ -99,10 +96,8 @@ export function SignInForm() {
     try {
       await signInWithEmailAndPassword(auth, values.email, values.password);
       toast({ title: '로그인 성공', description: 'InnerSpell에 오신 것을 환영합니다!' });
-      if (!DISABLE_REDIRECT) {
-        const redirectUrl = searchParams.get('redirect') || '/';
-        router.push(redirectUrl);
-      }
+      const redirectUrl = searchParams.get('redirect') || '/';
+      router.push(redirectUrl);
     } catch (error: any) {
       console.error("Sign-In Error:", error);
       let errorMessage: React.ReactNode = `로그인 중 알 수 없는 오류가 발생했습니다. (코드: ${error.code})`;
@@ -156,10 +151,8 @@ export function SignInForm() {
     try {
       await signInWithPopup(auth, provider);
       toast({ title: 'Google 로그인 성공', description: 'InnerSpell에 오신 것을 환영합니다!' });
-      if (!DISABLE_REDIRECT) {
-        const redirectUrl = searchParams.get('redirect') || '/';
-        router.push(redirectUrl);
-      }
+      const redirectUrl = searchParams.get('redirect') || '/';
+      router.push(redirectUrl);
     } catch (error: any) {
       console.error("Google Sign-In Error:", error);
       let errorMessage: React.ReactNode = `Google 로그인 중 알 수 없는 오류가 발생했습니다. (코드: ${error.code})`;
