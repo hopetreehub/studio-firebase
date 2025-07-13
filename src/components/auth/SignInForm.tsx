@@ -56,7 +56,7 @@ export function SignInForm() {
   const onPasswordlessSubmit = async (values: z.infer<typeof passwordlessSchema>) => {
     setLoading(true);
     if (!auth) {
-        toast({ variant: 'destructive', title: '설정 오류', description: 'Firebase 인증이 설정되지 않았습니다. .env 파일을 확인해주세요.' });
+        toast({ variant: 'destructive', title: '설정 오류', description: 'Firebase 인증이 설정되지 않았습니다. 관리자에게 문의하세요.' });
         setLoading(false);
         return;
     }
@@ -92,7 +92,7 @@ export function SignInForm() {
     setLoading(true);
     form.clearErrors();
     if (!auth) {
-        toast({ variant: 'destructive', title: '설정 오류', description: 'Firebase 인증이 설정되지 않았습니다. .env 파일을 확인해주세요.' });
+        toast({ variant: 'destructive', title: '설정 오류', description: 'Firebase 인증이 설정되지 않았습니다. 관리자에게 문의하세요.' });
         setLoading(false);
         return;
     }
@@ -148,7 +148,7 @@ export function SignInForm() {
     setLoading(true);
     form.clearErrors();
     if (!auth) {
-        toast({ variant: 'destructive', title: '설정 오류', description: 'Firebase 인증이 설정되지 않았습니다. .env 파일을 확인해주세요.' });
+        toast({ variant: 'destructive', title: '설정 오류', description: 'Firebase 인증이 설정되지 않았습니다. 관리자에게 문의하세요.' });
         setLoading(false);
         return;
     }
