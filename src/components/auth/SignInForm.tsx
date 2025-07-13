@@ -109,6 +109,15 @@ export function SignInForm() {
       
       switch (error.code) {
         case 'auth/invalid-credential':
+          errorMessage = (
+            <span>
+              입력하신 이메일 또는 비밀번호가 올바르지 않습니다. 계정이 없으신가요?{' '}
+              <Link href="/sign-up" className="underline font-bold">
+                회원가입
+              </Link>
+            </span>
+          );
+          break;
         case 'auth/user-not-found':
         case 'auth/wrong-password':
           errorMessage = (

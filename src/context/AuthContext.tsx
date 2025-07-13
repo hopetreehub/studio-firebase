@@ -1,3 +1,4 @@
+
 'use client';
 
 import type React from 'react';
@@ -35,24 +36,28 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const unsubscribe = onAuthStateChanged(auth, async (currentFirebaseUser) => {
       if (currentFirebaseUser) {
         setFirebaseUser(currentFirebaseUser);
-        const profile = await getUserProfile(currentFirebaseUser.uid);
+        let profile = await getUserProfile(currentFirebaseUser.uid);
         
-        const adminEmails = ['admin@innerspell.com', 'junsupark9999@gmail.com'];
-        if (profile) {
-           if (adminEmails.includes(profile.email || '')) {
-             profile.role = 'admin';
-           }
-           setUser(profile);
-        } else {
-           setUser({
-              uid: currentFirebaseUser.uid,
-              email: currentFirebaseUser.email,
-              displayName: currentFirebaseUser.displayName,
-              photoURL: currentFirebaseUser.photoURL,
-              role: adminEmails.includes(currentFirebaseUser.email || '') ? 'admin' : 'user',
-              subscriptionStatus: 'free',
-            });
+        // If profile doesn't exist (e.g., new Google sign-in), create a default one.
+        if (!profile) {
+          const adminEmails = (process.env.ADMIN_EMAILS || 'admin@innerspell.com,junsupark9999@gmail.com').split(',');
+          const newAppUser: AppUser = {
+            uid: currentFirebaseUser.uid,
+            email: currentFirebaseUser.email,
+            displayName: currentFirebaseUser.displayName,
+            photoURL: currentFirebaseUser.photoURL,
+            creationTime: currentFirebaseUser.metadata.creationTime,
+            lastSignInTime: currentFirebaseUser.metadata.lastSignInTime,
+            role: adminEmails.includes(currentFirebaseUser.email || '') ? 'admin' : 'user',
+            birthDate: '',
+            sajuInfo: '',
+            subscriptionStatus: 'free',
+          };
+          profile = newAppUser;
         }
+
+        setUser(profile);
+
       } else {
         setUser(null);
         setFirebaseUser(null);
