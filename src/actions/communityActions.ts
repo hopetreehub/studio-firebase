@@ -61,10 +61,13 @@ export async function getCommunityPosts(
     const postsRef = firestore.collection('communityPosts');
     const queryByCategory = postsRef.where('category', '==', category);
 
+    // Run count and data queries concurrently for better performance and unified error handling
     const countPromise = queryByCategory.count().get();
     
     let postsQuery = queryByCategory.orderBy('createdAt', 'desc');
     if (page > 1) {
+      // To get the correct starting point, we must fetch the documents to skip
+      // and use the last one as the `startAfter` cursor.
       const startAfterDocSnapshot = await queryByCategory
         .orderBy('createdAt', 'desc')
         .limit((page - 1) * POSTS_PER_PAGE)
@@ -78,6 +81,7 @@ export async function getCommunityPosts(
     }
     const postsPromise = postsQuery.limit(POSTS_PER_PAGE).get();
 
+    // Await both promises together
     const [countSnapshot, postsSnapshot] = await Promise.all([countPromise, postsPromise]);
 
     const totalPosts = countSnapshot.data().count;
@@ -93,6 +97,7 @@ export async function getCommunityPosts(
 
   } catch (error) {
     console.error(`CRITICAL: Error fetching posts for category '${category}' from Firestore:`, error);
+    // On any error during fetch (count or data), return a safe empty state to prevent crashes.
     return { posts: [], totalPages: 1 };
   }
 }
@@ -106,6 +111,7 @@ export async function getCommunityPostById(postId: string): Promise<CommunityPos
       return null;
     }
     
+    // Increment view count in the background, don't let it block the response.
     docRef.update({ viewCount: FieldValue.increment(1) }).catch(err => {
         console.error(`Failed to increment view count for post ${postId}:`, err);
     });
@@ -113,6 +119,7 @@ export async function getCommunityPostById(postId: string): Promise<CommunityPos
     return mapDocToCommunityPost(doc);
   } catch (error) {
      console.error(`CRITICAL: Error fetching post with ID ${postId}:`, error);
+     // Return null to allow the calling page to show a "not found" or error state.
      return null;
   }
 }
@@ -205,9 +212,12 @@ export async function deleteCommunityPost(
 
     const postData = doc.data();
     if (postData?.authorId !== userId) {
+      // In a real app, you might also check for an 'admin' role here.
       return { success: false, error: '이 게시물을 삭제할 권한이 없습니다.' };
     }
 
+    // Deleting a document does not delete its subcollections.
+    // We need to delete all comments in a batch.
     const commentsRef = postRef.collection('comments');
     const commentsSnapshot = await commentsRef.get();
     
@@ -217,6 +227,7 @@ export async function deleteCommunityPost(
       batch.delete(commentDoc.ref);
     });
 
+    // Finally, delete the post itself.
     batch.delete(postRef);
 
     await batch.commit();
