@@ -56,7 +56,7 @@ function mapDocToCommunityPost(doc: FirebaseFirestore.DocumentSnapshot): Communi
 }
 
 // Get community posts for a specific category
-export async function getCommunityPosts(category: CommunityPostCategory): Promise<CommunityPost[]> {
+export async function getCommunityPosts(category: 'free-discussion' | 'reading-share'): Promise<CommunityPost[]> {
   try {
     const snapshot = await firestore.collection('communityPosts')
       .where('category', '==', category)
@@ -100,11 +100,11 @@ export async function getCommunityPostById(postId: string): Promise<CommunityPos
 }
 
 
-// Create a new free-discussion, q-and-a, deck-review, or study-group post
+// Create a new free-discussion post
 export async function createCommunityPost(
   formData: CommunityPostFormData,
   author: { uid: string; displayName?: string | null; photoURL?: string | null },
-  category: 'free-discussion' | 'q-and-a' | 'deck-review' | 'study-group'
+  category: 'free-discussion'
 ): Promise<{ success: boolean; postId?: string; error?: string | object }> {
   try {
     const validationResult = CommunityPostFormSchema.safeParse(formData);

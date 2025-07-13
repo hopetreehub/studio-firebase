@@ -134,7 +134,7 @@ export type SavedReading = {
 
 
 // --- Community Types ---
-export type CommunityPostCategory = 'free-discussion' | 'reading-share' | 'q-and-a' | 'deck-review' | 'study-group';
+export type CommunityPostCategory = 'free-discussion' | 'reading-share';
 
 export type CommunityPost = {
   id: string;
@@ -176,9 +176,9 @@ const ApiAuthorSchema = z.object({
   authorPhotoURL: z.string().url().optional(),
 });
 
-// Schema for API posts in free-discussion, q-a, deck-review, study-group
+// Schema for API posts in free-discussion
 const ApiCommunityPostPayloadSchema = CommunityPostFormSchema.merge(ApiAuthorSchema).extend({
-    category: z.enum(['free-discussion', 'q-and-a', 'deck-review', 'study-group']),
+    category: z.literal('free-discussion'),
 });
 
 // Schema for API posts in reading-share

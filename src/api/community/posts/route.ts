@@ -52,9 +52,6 @@ export async function POST(request: Request) {
         break;
       
       case 'free-discussion':
-      case 'q-and-a':
-      case 'deck-review':
-      case 'study-group':
         result = await createCommunityPost(postData, author, postData.category);
         break;
       

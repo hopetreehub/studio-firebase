@@ -18,15 +18,15 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, FilePlus2, AlertTriangle, Users, HelpCircle, Library, BookUser } from 'lucide-react';
+import { Loader2, FilePlus2, AlertTriangle, Users } from 'lucide-react';
 import { createCommunityPost } from '@/actions/communityActions';
-import { CommunityPostFormData, CommunityPostFormSchema, CommunityPostCategory } from '@/types';
+import { CommunityPostFormData, CommunityPostFormSchema } from '@/types';
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 interface CommunityPostFormProps {
-  category: 'free-discussion' | 'q-and-a' | 'deck-review' | 'study-group';
+  category: 'free-discussion';
 }
 
 const formMetas = {
@@ -35,24 +35,6 @@ const formMetas = {
     title: '새 글 작성하기',
     description: '자유롭게 여러분의 생각과 질문을 공유해주세요.',
     submitButtonText: '게시물 등록',
-  },
-  'q-and-a': {
-    icon: <HelpCircle className="mr-3 h-8 w-8" />,
-    title: '새 질문 작성하기',
-    description: '타로에 대해 궁금한 점을 질문하고 답변을 받아보세요.',
-    submitButtonText: '질문 등록',
-  },
-  'deck-review': {
-    icon: <Library className="mr-3 h-8 w-8" />,
-    title: '새 덱 리뷰 작성하기',
-    description: '소장하고 있는 타로덱의 사진, 특징, 사용 후기 등을 공유해주세요.',
-    submitButtonText: '리뷰 등록',
-  },
-  'study-group': {
-    icon: <BookUser className="mr-3 h-8 w-8" />,
-    title: '새 스터디/모임 모집',
-    description: '함께 공부할 스터디 그룹을 만들거나, 오프라인 모임을 제안해보세요.',
-    submitButtonText: '모집 글 등록',
   }
 }
 
@@ -113,7 +95,7 @@ export function CommunityPostForm({ category }: CommunityPostFormProps) {
         </CardHeader>
         <CardContent className="text-center">
             <Button asChild>
-                <Link href={`/sign-in?redirect=/community/${category}/new`}>로그인 페이지로 이동</Link>
+                <Link href={`/sign-in?redirect=/community/new`}>로그인 페이지로 이동</Link>
             </Button>
         </CardContent>
       </Card>

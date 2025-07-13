@@ -1,6 +1,6 @@
 
 import type { Metadata } from 'next';
-import { MessageSquare, Heart, Users, HelpCircle, Library, BookUser, BookOpenText } from 'lucide-react';
+import { MessageSquare, Heart, Users, BookOpenText } from 'lucide-react';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
@@ -21,24 +21,6 @@ const communityBoards = [
     description: '자신이 직접 뽑은 타로 리딩 결과를 공유하고, 다른 사람들과 해석에 대해 토론해보세요.',
     href: '/community/reading-share',
     icon: <Heart className="h-10 w-10 text-accent" />,
-  },
-  {
-    title: '질문과 답변',
-    description: '타로 카드, 스프레드, 상징 등 궁금한 점을 질문하고 커뮤니티의 지혜를 얻으세요.',
-    href: '/community/q-and-a',
-    icon: <HelpCircle className="h-10 w-10 text-accent" />,
-  },
-  {
-    title: '타로덱 리뷰',
-    description: '소장하고 있는 아름다운 타로덱을 소개하고, 사용 후기를 공유하며 정보를 나눠보세요.',
-    href: '/community/deck-review',
-    icon: <Library className="h-10 w-10 text-accent" />,
-  },
-  {
-    title: '스터디/모임',
-    description: '타로 스터디 그룹을 만들거나, 함께 공부할 동료를 찾아보세요. 오프라인 모임도 좋아요.',
-    href: '/community/study-group',
-    icon: <BookUser className="h-10 w-10 text-accent" />,
   },
   {
     title: '타로 백과사전',

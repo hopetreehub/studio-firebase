@@ -45,12 +45,6 @@ export default async function CommunityPostPage({ params }: Props) {
     switch (post.category) {
       case 'reading-share':
         return '/community/reading-share';
-      case 'q-and-a':
-        return '/community/q-and-a';
-      case 'deck-review':
-        return '/community/deck-review';
-      case 'study-group':
-        return '/community/study-group';
       case 'free-discussion':
       default:
         return '/community/free-discussion';
@@ -63,12 +57,6 @@ export default async function CommunityPostPage({ params }: Props) {
     switch(post.category) {
         case 'reading-share':
             return <Badge variant="secondary" className="w-fit mb-2"><Heart className="mr-1.5 h-3 w-3"/>리딩 공유</Badge>;
-        case 'q-and-a':
-            return <Badge variant="secondary" className="w-fit mb-2"><HelpCircle className="mr-1.5 h-3 w-3"/>질문과 답변</Badge>;
-        case 'deck-review':
-            return <Badge variant="secondary" className="w-fit mb-2"><Library className="mr-1.5 h-3 w-3"/>덱 리뷰</Badge>;
-        case 'study-group':
-            return <Badge variant="secondary" className="w-fit mb-2"><BookUser className="mr-1.5 h-3 w-3"/>스터디/모임</Badge>;
         case 'free-discussion':
             return <Badge variant="secondary" className="w-fit mb-2"><Users className="mr-1.5 h-3 w-3"/>자유 토론</Badge>;
         default:
