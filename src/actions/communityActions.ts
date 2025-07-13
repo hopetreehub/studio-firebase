@@ -64,9 +64,9 @@ export async function getCommunityPosts(
 ): Promise<{ posts: CommunityPost[]; totalPosts: number; totalPages: number }> {
   try {
     const postsRef = firestore.collection('communityPosts');
-    const queryByCategory = postsRef.where('category', '==', category);
+    let queryByCategory = postsRef.where('category', '==', category);
 
-    // Get total count for pagination
+    // Get total count for pagination. Use a separate query for this.
     const countSnapshot = await queryByCategory.count().get();
     const totalPosts = countSnapshot.data().count;
     const totalPages = Math.ceil(totalPosts / POSTS_PER_PAGE);
@@ -79,14 +79,18 @@ export async function getCommunityPosts(
     let query = queryByCategory.orderBy('createdAt', 'desc');
 
     if (page > 1) {
-      const startAfterDoc = await queryByCategory
+      // Re-run the query with a limit to find the document to start after.
+      // This is less efficient than cursor-based pagination with infinite scroll,
+      // but necessary for numbered pagination without passing cursors from the client.
+      const startAfterDocSnapshot = await queryByCategory
         .orderBy('createdAt', 'desc')
         .limit((page - 1) * POSTS_PER_PAGE)
-        .get()
-        .then(snapshot => snapshot.docs[snapshot.docs.length - 1]);
+        .get();
         
-      if(startAfterDoc) {
-        query = query.startAfter(startAfterDoc);
+      const lastVisibleDoc = startAfterDocSnapshot.docs[startAfterDocSnapshot.docs.length - 1];
+        
+      if(lastVisibleDoc) {
+        query = query.startAfter(lastVisibleDoc);
       }
     }
     
