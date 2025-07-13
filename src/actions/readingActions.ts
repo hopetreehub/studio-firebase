@@ -22,12 +22,18 @@ export async function saveUserReading(
 
     const { userId, question, spreadName, spreadNumCards, drawnCards, interpretationText } = validationResult.data;
 
+    // Ensure position has a fallback value
+    const drawnCardsWithPosition = drawnCards.map((card, index) => ({
+      ...card,
+      position: card.position || `카드 ${index + 1}`
+    }));
+
     const readingData = {
       userId,
       question,
       spreadName,
       spreadNumCards,
-      drawnCards, // Saves the simplified, validated card info
+      drawnCards: drawnCardsWithPosition, // Saves the simplified, validated card info with position fallback
       interpretationText,
       createdAt: FieldValue.serverTimestamp(),
     };
@@ -74,7 +80,7 @@ export async function getUserReadings(userId: string): Promise<SavedReading[]> {
         return {
           id: rawCard.id,
           isReversed: rawCard.isReversed,
-          position: rawCard.position,
+          position: rawCard.position || '알 수 없는 위치',
           name: cardDetails?.name || '알 수 없는 카드',
           imageSrc: cardDetails?.imageSrc || '/images/tarot/back.png', // Fallback image
         };

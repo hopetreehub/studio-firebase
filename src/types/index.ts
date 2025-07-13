@@ -96,7 +96,7 @@ export const tarotSpreads: SpreadConfiguration[] = [
 export const SavedReadingCardSchema = z.object({
   id: z.string(),
   isReversed: z.boolean(),
-  position: z.string(), // Made required for data consistency
+  position: z.string().optional(), // Make position optional to handle cases where it might be missing
 });
 export type SavedReadingCardFirestore = z.infer<typeof SavedReadingCardSchema>;
 
