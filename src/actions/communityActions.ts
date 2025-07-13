@@ -64,7 +64,7 @@ export async function getCommunityPosts(
 ): Promise<{ posts: CommunityPost[]; totalPosts: number; totalPages: number }> {
   try {
     const postsRef = firestore.collection('communityPosts');
-    let queryByCategory = postsRef.where('category', '==', category);
+    const queryByCategory = postsRef.where('category', '==', category);
 
     // Fetch total count and posts for the current page concurrently
     const countPromise = queryByCategory.count().get();
@@ -135,8 +135,7 @@ export async function getCommunityPostById(postId: string): Promise<CommunityPos
 // Create a new free-discussion post
 export async function createCommunityPost(
   formData: CommunityPostFormData,
-  author: { uid: string; displayName?: string | null; photoURL?: string | null },
-  category: 'free-discussion'
+  author: { uid: string; displayName?: string | null; photoURL?: string | null }
 ): Promise<{ success: boolean; postId?: string; error?: string | object }> {
   try {
     const validationResult = CommunityPostFormSchema.safeParse(formData);
@@ -155,7 +154,7 @@ export async function createCommunityPost(
       authorPhotoURL: author.photoURL || '',
       title,
       content,
-      category: category,
+      category: 'free-discussion' as CommunityPostCategory,
       viewCount: 0,
       commentCount: 0,
       createdAt: FieldValue.serverTimestamp(),
@@ -163,7 +162,7 @@ export async function createCommunityPost(
     };
 
     const docRef = await firestore.collection('communityPosts').add(newPostData);
-    console.log(`Created new community post with ID: ${docRef.id} in category '${category}'`);
+    console.log(`Created new community post with ID: ${docRef.id} in category 'free-discussion'`);
     return { success: true, postId: docRef.id };
   } catch (error) {
     console.error('Error creating community post:', error);
