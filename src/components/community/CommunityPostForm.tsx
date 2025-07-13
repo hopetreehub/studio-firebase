@@ -25,20 +25,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
-interface CommunityPostFormProps {
-  category: 'free-discussion';
-}
-
-const formMetas = {
-  'free-discussion': {
-    icon: <Users className="mr-3 h-8 w-8" />,
-    title: '새 글 작성하기',
-    description: '자유롭게 여러분의 생각과 질문을 공유해주세요.',
-    submitButtonText: '게시물 등록',
-  }
-}
-
-export function CommunityPostForm({ category }: CommunityPostFormProps) {
+export function CommunityPostForm() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
@@ -51,9 +38,7 @@ export function CommunityPostForm({ category }: CommunityPostFormProps) {
       content: '',
     },
   });
-
-  const meta = formMetas[category];
-
+  
   const onSubmit = async (values: CommunityPostFormData) => {
     if (!user) {
       toast({ variant: 'destructive', title: '오류', description: '글을 작성하려면 로그인이 필요합니다.' });
@@ -62,7 +47,7 @@ export function CommunityPostForm({ category }: CommunityPostFormProps) {
     setLoading(true);
     
     // Pass category to the action
-    const result = await createCommunityPost(values, user, category);
+    const result = await createCommunityPost(values, user, 'free-discussion');
 
     if (result.success && result.postId) {
       toast({
@@ -103,13 +88,13 @@ export function CommunityPostForm({ category }: CommunityPostFormProps) {
   }
 
   return (
-    <Card className="max-w-3xl mx-auto shadow-lg border-primary/10">
+    <Card className="shadow-lg border-primary/10">
       <CardHeader>
         <CardTitle className="font-headline text-3xl text-primary flex items-center">
-          {meta.icon}
-          {meta.title}
+          <Users className="mr-3 h-8 w-8" />
+          자유 토론 글쓰기
         </CardTitle>
-        <CardDescription>{meta.description}</CardDescription>
+        <CardDescription>자유롭게 여러분의 생각과 질문을 공유해주세요.</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -152,7 +137,7 @@ export function CommunityPostForm({ category }: CommunityPostFormProps) {
               </Button>
               <Button type="submit" disabled={loading}>
                 {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FilePlus2 className="mr-2 h-4 w-4" />}
-                {loading ? '등록 중...' : meta.submitButtonText}
+                {loading ? '등록 중...' : '게시물 등록'}
               </Button>
             </div>
           </form>

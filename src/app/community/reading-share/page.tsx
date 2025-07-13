@@ -1,7 +1,7 @@
 
 import { getCommunityPosts } from '@/actions/communityActions';
 import type { Metadata } from 'next';
-import { Heart, FilePlus } from 'lucide-react';
+import { Heart, FilePlus, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import {
@@ -24,8 +24,18 @@ export const metadata: Metadata = {
 // Revalidate this page every 10 minutes
 export const revalidate = 600;
 
-export default async function ReadingSharePage() {
-  const posts = await getCommunityPosts('reading-share');
+interface ReadingSharePageProps {
+  searchParams: {
+    page?: string;
+  };
+}
+
+export default async function ReadingSharePage({ searchParams }: ReadingSharePageProps) {
+  const page = Number(searchParams.page) || 1;
+  const { posts, totalPages } = await getCommunityPosts('reading-share', page);
+
+  const hasNextPage = page < totalPages;
+  const hasPrevPage = page > 1;
 
   return (
     <div className="space-y-8">
@@ -40,7 +50,7 @@ export default async function ReadingSharePage() {
           </p>
         </div>
         <Button asChild className="shrink-0">
-          <Link href="/community/reading-share/new">
+          <Link href="/community/new?category=reading-share">
             <FilePlus className="mr-2 h-4 w-4" />
             새 리딩 공유하기
           </Link>
@@ -85,7 +95,26 @@ export default async function ReadingSharePage() {
           </TableBody>
         </Table>
       </div>
-      {/* Add pagination controls here in the future */}
+      
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-4 mt-8">
+          <Button asChild variant="outline" disabled={!hasPrevPage}>
+            <Link href={`/community/reading-share?page=${page - 1}`} scroll={false}>
+              <ChevronLeft className="mr-2 h-4 w-4" />
+              이전
+            </Link>
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            {page} / {totalPages} 페이지
+          </span>
+          <Button asChild variant="outline" disabled={!hasNextPage}>
+            <Link href={`/community/reading-share?page=${page + 1}`} scroll={false}>
+              다음
+              <ChevronRight className="ml-2 h-4 w-4" />
+            </Link>
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

@@ -7,6 +7,8 @@ import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import type { CommunityPost, CommunityPostCategory } from '@/types';
 import { CommunityPostFormSchema, CommunityPostFormData, ReadingSharePostFormData, ReadingSharePostFormSchema } from '@/types';
 
+const POSTS_PER_PAGE = 15;
+
 // Helper to safely map Firestore doc to CommunityPost type
 function mapDocToCommunityPost(doc: FirebaseFirestore.DocumentSnapshot): CommunityPost {
   const data = doc.data();
@@ -55,22 +57,53 @@ function mapDocToCommunityPost(doc: FirebaseFirestore.DocumentSnapshot): Communi
   };
 }
 
-// Get community posts for a specific category
-export async function getCommunityPosts(category: 'free-discussion' | 'reading-share'): Promise<CommunityPost[]> {
+// Get community posts with pagination
+export async function getCommunityPosts(
+  category: 'free-discussion' | 'reading-share',
+  page: number = 1
+): Promise<{ posts: CommunityPost[]; totalPosts: number; totalPages: number }> {
   try {
-    const snapshot = await firestore.collection('communityPosts')
-      .where('category', '==', category)
-      .orderBy('createdAt', 'desc')
-      .get();
-      
-    if (snapshot.empty) {
-      return [];
+    const postsRef = firestore.collection('communityPosts');
+    const queryByCategory = postsRef.where('category', '==', category);
+
+    // Get total count for pagination
+    const countSnapshot = await queryByCategory.count().get();
+    const totalPosts = countSnapshot.data().count;
+    const totalPages = Math.ceil(totalPosts / POSTS_PER_PAGE);
+
+    if (totalPosts === 0) {
+      return { posts: [], totalPosts: 0, totalPages: 0 };
     }
-    return snapshot.docs.map(mapDocToCommunityPost);
+
+    // Fetch the posts for the current page
+    let query = queryByCategory.orderBy('createdAt', 'desc');
+
+    if (page > 1) {
+      const startAfterDoc = await queryByCategory
+        .orderBy('createdAt', 'desc')
+        .limit((page - 1) * POSTS_PER_PAGE)
+        .get()
+        .then(snapshot => snapshot.docs[snapshot.docs.length - 1]);
+        
+      if(startAfterDoc) {
+        query = query.startAfter(startAfterDoc);
+      }
+    }
+    
+    const snapshot = await query.limit(POSTS_PER_PAGE).get();
+
+    if (snapshot.empty) {
+      return { posts: [], totalPosts, totalPages };
+    }
+    
+    const posts = snapshot.docs.map(mapDocToCommunityPost);
+
+    return { posts, totalPosts, totalPages };
+
   } catch (error) {
     console.error(`CRITICAL: Error fetching posts for category '${category}' from Firestore:`, error);
     // On failure, return an empty array to prevent the page from crashing.
-    return [];
+    return { posts: [], totalPosts: 0, totalPages: 1 };
   }
 }
 
